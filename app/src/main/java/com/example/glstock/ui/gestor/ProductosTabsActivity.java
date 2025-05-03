@@ -160,6 +160,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     } else {
                         // Navegar a pestaña "Todos" y actualizar con resultados
                         binding.viewPager.setCurrentItem(0);
+                        actualizarFragmentoActual(response.body());
                         // Idealmente deberíamos tener un método para actualizar
                         // los productos en el fragmento actual
                     }

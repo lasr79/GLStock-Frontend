@@ -12,7 +12,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface MovimientoService {
-    @POST("api/movimientos")
+    @POST("api/movimientos/registrar")
     Call<Movimiento> registrarMovimiento(@Body Movimiento movimiento);
 
     @GET("api/movimientos/ultimos-10-dias")

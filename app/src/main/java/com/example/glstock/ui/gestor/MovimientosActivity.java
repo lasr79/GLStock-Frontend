@@ -26,7 +26,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 public class MovimientosActivity extends AppCompatActivity {
 
     private ActivityMovimientosBinding binding;
@@ -41,7 +40,6 @@ public class MovimientosActivity extends AppCompatActivity {
         binding = ActivityMovimientosBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Verificar si existe una Toolbar en el layout
         if (binding.toolbar != null) {
             setSupportActionBar(binding.toolbar);
             if (getSupportActionBar() != null) {
@@ -50,14 +48,11 @@ public class MovimientosActivity extends AppCompatActivity {
             }
         }
 
-        // Inicializar servicios
         productoService = ApiClient.getClient().create(ProductoService.class);
         movimientoService = ApiClient.getClient().create(MovimientoService.class);
 
-        // Cargar productos
         cargarProductos();
 
-        // Configurar spinner de productos
         binding.spinnerProducto.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -74,17 +69,13 @@ public class MovimientosActivity extends AppCompatActivity {
             }
         });
 
-        // Configurar los RadioButtons para tipo de movimiento
         binding.rgTipoMovimiento.setOnCheckedChangeListener((group, checkedId) -> {
             boolean esSalida = (checkedId == R.id.rbSalida);
             binding.etCantidad.setHint(esSalida ? "Cantidad a retirar" : "Cantidad a ingresar");
             binding.etMotivo.setHint(esSalida ? "Motivo de salida" : "Motivo de entrada");
-
-            // Actualizar campo de validación
             actualizarDetallesProducto();
         });
 
-        // Configurar botón de registro
         binding.btnRegistrar.setOnClickListener(v -> registrarMovimiento());
     }
 
@@ -96,14 +87,10 @@ public class MovimientosActivity extends AppCompatActivity {
                 showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
                     listaProductos = response.body();
-
-                    // Crear un array con los nombres de los productos para el spinner
                     List<String> nombresProductos = new ArrayList<>();
                     for (Producto producto : listaProductos) {
                         nombresProductos.add(producto.getNombre());
                     }
-
-                    // Configurar el adaptador del spinner
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
                             MovimientosActivity.this,
                             android.R.layout.simple_spinner_item,
@@ -111,7 +98,6 @@ public class MovimientosActivity extends AppCompatActivity {
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     binding.spinnerProducto.setAdapter(adapter);
 
-                    // Seleccionar el primer producto automáticamente
                     if (!nombresProductos.isEmpty()) {
                         binding.spinnerProducto.setSelection(0);
                     }
@@ -133,8 +119,6 @@ public class MovimientosActivity extends AppCompatActivity {
     private void actualizarDetallesProducto() {
         if (productoSeleccionado != null) {
             binding.tvStockActual.setText("Stock actual: " + productoSeleccionado.getCantidad());
-
-            // Verificar si es salida para mostrar cantidad disponible
             if (binding.rbSalida.isChecked()) {
                 binding.tvLimiteRetiro.setVisibility(View.VISIBLE);
                 binding.tvLimiteRetiro.setText("Límite de retiro: " + productoSeleccionado.getCantidad());
@@ -148,7 +132,6 @@ public class MovimientosActivity extends AppCompatActivity {
     }
 
     private void registrarMovimiento() {
-        // Validar campos
         if (productoSeleccionado == null) {
             Toast.makeText(this, "Seleccione un producto", Toast.LENGTH_SHORT).show();
             return;
@@ -167,39 +150,31 @@ public class MovimientosActivity extends AppCompatActivity {
         }
 
         int cantidad = Integer.parseInt(cantidadStr);
-
-        // Validar que la cantidad sea mayor que 0
         if (cantidad <= 0) {
             binding.etCantidad.setError("La cantidad debe ser mayor que 0");
             return;
         }
 
-        // Si es una salida, validar que no exceda el stock
         if (binding.rbSalida.isChecked() && cantidad > productoSeleccionado.getCantidad()) {
             binding.etCantidad.setError("La cantidad excede el stock disponible");
             return;
         }
 
-        // Determinar tipo de movimiento
         TipoMovimiento tipoMovimiento = binding.rbEntrada.isChecked() ?
                 TipoMovimiento.ENTRADA : TipoMovimiento.SALIDA;
 
         showProgress(true);
 
-        // Crear objeto movimiento
+        // 🔧 Usar solo el ID del producto
+        Producto productoSoloId = new Producto();
+        productoSoloId.setId(productoSeleccionado.getId());
+
         Movimiento movimiento = new Movimiento();
-        movimiento.setProducto(productoSeleccionado);
-
-        // Crear usuario temporal con solo el ID (el backend llenará el resto)
-        Usuario usuario = new Usuario();
-        usuario.setId(1L); // Esto debería ser el ID del usuario logueado
-        movimiento.setUsuario(usuario);
-
+        movimiento.setProducto(productoSoloId);  // <-- solo ID
         movimiento.setTipo(tipoMovimiento);
         movimiento.setCantidad(cantidad);
         movimiento.setMotivo(motivo);
 
-        // Registrar movimiento
         movimientoService.registrarMovimiento(movimiento).enqueue(new Callback<Movimiento>() {
             @Override
             public void onResponse(Call<Movimiento> call, Response<Movimiento> response) {
@@ -207,10 +182,10 @@ public class MovimientosActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(MovimientosActivity.this,
                             "Movimiento registrado con éxito", Toast.LENGTH_SHORT).show();
-                    finish(); // Volver a la pantalla anterior
+                    finish();
                 } else {
                     Toast.makeText(MovimientosActivity.this,
-                            "Error al registrar movimiento: " + response.message(), Toast.LENGTH_SHORT).show();
+                            "Error al registrar movimiento: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -238,3 +213,4 @@ public class MovimientosActivity extends AppCompatActivity {
         return true;
     }
 }
+

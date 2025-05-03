@@ -1,5 +1,7 @@
 package com.example.glstock.util;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -19,12 +21,15 @@ public class AuthInterceptor implements Interceptor {
         String token = SessionManager.getInstance().getToken();
 
         if (token != null && !token.isEmpty()) {
+            Log.d("AUTH_INTERCEPTOR", "Agregando token: Bearer " + token);  // 🔍 AÑADE ESTO
+
             Request newRequest = originalRequest.newBuilder()
                     .header("Authorization", "Bearer " + token)
                     .build();
             return chain.proceed(newRequest);
         }
 
+        Log.d("AUTH_INTERCEPTOR", "No se encontró token");  // 🔍 OPCIONAL
         return chain.proceed(originalRequest);
     }
 }
