@@ -30,15 +30,15 @@ public interface ProductoService {
     @GET("api/productos/recientes")
     Call<List<Producto>> productosRecientes();
 
-    @POST("api/productos")
+    @POST("api/productos/crear")
     Call<Producto> crearProducto(@Body Producto producto);
 
-    @PUT("api/productos/{id}")
+    @PUT("api/productos/actualizar/{id}")
     Call<Producto> actualizarProducto(@Path("id") Long id, @Body Producto producto);
 
-    @DELETE("api/productos/{id}")
+    @DELETE("api/productos/eliminar/{id}")
     Call<Void> eliminarProducto(@Path("id") Long id);
 
-    @GET("api/productos/{id}")
+    @GET("api/productos/buscar-id/{id}")
     Call<Producto> buscarPorId(@Path("id") Long id);
 }

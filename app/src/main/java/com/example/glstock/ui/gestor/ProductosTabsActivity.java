@@ -64,10 +64,16 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         // Configurar botón de búsqueda
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
 
-        binding.fabAddProduct.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProductoDetalleActivity.class);
-            startActivity(intent);
-        });
+        // Mostrar el botón flotante solo si el usuario es ADMIN
+        if (SessionManager.getInstance().isAdmin()) {
+            binding.fabAddProduct.setVisibility(View.VISIBLE);
+            binding.fabAddProduct.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ProductoDetalleActivity.class);
+                startActivity(intent);
+            });
+        } else {
+            binding.fabAddProduct.setVisibility(View.GONE);
+        }
 
         // Configurar chips de filtrado
         configurarChips();
@@ -78,29 +84,20 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
     private void configurarChips() {
         binding.chipTodos.setOnClickListener(v -> {
-            // Este filtro se aplica desde la pestaña "Todos"
-            // Podríamos recargar los productos sin filtros aquí
+            // Filtro general (opcional)
         });
 
-        binding.chipRecientes.setOnClickListener(v -> {
-            // Cargar productos recientes
-            cargarProductosRecientes();
-        });
+        binding.chipRecientes.setOnClickListener(v -> cargarProductosRecientes());
 
-        binding.chipBajoStock.setOnClickListener(v -> {
-            // Cargar productos con bajo stock
-            cargarProductosBajoStock();
-        });
+        binding.chipBajoStock.setOnClickListener(v -> cargarProductosBajoStock());
 
         binding.chipPrecio.setOnClickListener(v -> {
             Chip chip = (Chip) v;
             if (chip.getText().toString().contains("↑")) {
                 chip.setText("Precio ↓");
-                // Ordenar por precio descendente
                 ordenarProductosPorPrecioDescendente();
             } else {
                 chip.setText("Precio ↑");
-                // Ordenar por precio ascendente
                 ordenarProductosPorPrecioAscendente();
             }
         });
@@ -116,16 +113,14 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     categorias = response.body();
                     configurarViewPagerConCategorias();
                 } else {
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Error al cargar categorías", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar categorías", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Categoria>> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -134,7 +129,6 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         pagerAdapter = new ProductoCategoriasPagerAdapter(this, categorias, true);
         binding.viewPager.setAdapter(pagerAdapter);
 
-        // Conectar TabLayout con ViewPager2
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
             if (position == 0) {
                 tab.setText("Todos");
@@ -158,27 +152,21 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    // Aquí deberíamos mostrar los resultados
                     if (response.body().isEmpty()) {
-                        Toast.makeText(ProductosTabsActivity.this,
-                                "No se encontraron productos con ese nombre",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProductosTabsActivity.this, "No se encontraron productos", Toast.LENGTH_SHORT).show();
                     } else {
-                        // Navegar a pestaña "Todos" y actualizar con resultados
                         binding.viewPager.setCurrentItem(0);
                         actualizarFragmentoActual(response.body());
                     }
                 } else {
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Error en la búsqueda", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Error en la búsqueda", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -190,22 +178,18 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    // Ir a la pestaña "Todos" y actualizar los datos
                     binding.viewPager.setCurrentItem(0);
                     actualizarFragmentoActual(response.body());
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Mostrando productos recientes", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Mostrando productos recientes", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Error al cargar productos recientes", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar productos recientes", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -217,55 +201,45 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    // Ir a la pestaña "Todos" y actualizar los datos
                     binding.viewPager.setCurrentItem(0);
                     actualizarFragmentoActual(response.body());
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Mostrando productos con bajo stock", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Mostrando productos con bajo stock", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(ProductosTabsActivity.this,
-                            "Error al cargar productos con bajo stock", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar productos con bajo stock", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void ordenarProductosPorPrecioAscendente() {
-        // Obtener el fragmento actual y ordenar sus productos
-        CategoriaProductosFragment fragmentoActual =
-                (CategoriaProductosFragment) getSupportFragmentManager()
-                        .findFragmentByTag("f" + binding.viewPager.getCurrentItem());
+        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
+                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
 
         if (fragmentoActual != null) {
             fragmentoActual.ordenarPorPrecioAscendente();
-            Toast.makeText(this, "Productos ordenados por precio ascendente", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Productos ordenados por precio ↑", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void ordenarProductosPorPrecioDescendente() {
-        // Obtener el fragmento actual y ordenar sus productos
-        CategoriaProductosFragment fragmentoActual =
-                (CategoriaProductosFragment) getSupportFragmentManager()
-                        .findFragmentByTag("f" + binding.viewPager.getCurrentItem());
+        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
+                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
 
         if (fragmentoActual != null) {
             fragmentoActual.ordenarPorPrecioDescendente();
-            Toast.makeText(this, "Productos ordenados por precio descendente", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Productos ordenados por precio ↓", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void actualizarFragmentoActual(List<Producto> productos) {
-        // Obtener el fragmento actual y actualizar sus productos
-        CategoriaProductosFragment fragmentoActual =
-                (CategoriaProductosFragment) getSupportFragmentManager()
-                        .findFragmentByTag("f" + binding.viewPager.getCurrentItem());
+        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
+                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
 
         if (fragmentoActual != null) {
             fragmentoActual.actualizarProductos(productos);
@@ -291,7 +265,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         if (itemId == R.id.navigation_inicio) {
             startActivity(new Intent(this, MainActivity.class));
-            finish(); // Importante terminar esta actividad
+            finish();
             return true;
         } else if (itemId == R.id.navigation_reportes) {
             Intent intent = new Intent(this, MainActivity.class);

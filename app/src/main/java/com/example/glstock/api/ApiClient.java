@@ -34,14 +34,14 @@ public class ApiClient {
             // Configuración de Gson para fechas
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>)
-                            (json, type, jsonDeserializationContext) ->
-                                    LocalDate.parse(json.getAsJsonPrimitive().getAsString()))
+                            (json, type, context) -> LocalDate.parse(json.getAsJsonPrimitive().getAsString()))
                     .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>)
-                            (json, type, jsonDeserializationContext) ->
-                                    LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(),
-                                            DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                            (json, type, context) -> LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(),
+                                    DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                     .registerTypeAdapter(Date.class, (JsonDeserializer<Date>)
-                            (json, typeOfT, context) -> Date.valueOf(json.getAsString()))
+                            (json, type, context) -> Date.valueOf(json.getAsString()))
+                    .registerTypeAdapter(Date.class, (JsonSerializer<Date>)
+                            (src, typeOfSrc, context) -> new JsonPrimitive(src.toString())) // <-- ESTO ES CLAVE
                     .create();
 
             // Construir Retrofit
