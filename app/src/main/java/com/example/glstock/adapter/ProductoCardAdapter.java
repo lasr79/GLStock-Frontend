@@ -1,5 +1,7 @@
 package com.example.glstock.adapter;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.glstock.R;
 import com.example.glstock.model.Producto;
+import com.example.glstock.ui.gestor.ProductoDetalleActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +25,7 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
 
     private List<Producto> productos;
     private OnProductoClickListener listener;
+    private Context context;
 
     public interface OnProductoClickListener {
         void onProductoClick(Producto producto);
@@ -60,7 +64,8 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
     @NonNull
     @Override
     public ProductoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        context = parent.getContext();
+        View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_producto_card, parent, false);
         return new ProductoViewHolder(view);
     }
@@ -94,7 +99,16 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onProductoClick(productos.get(position));
+                    Producto producto = productos.get(position);
+
+                    // Llamamos al método en el listener (la actividad que implementa la interfaz)
+                    listener.onProductoClick(producto);
+
+                    // También iniciamos directamente la actividad de detalle
+                    Intent intent = new Intent(itemView.getContext(), ProductoDetalleActivity.class);
+                    // Pasar el producto como extra serializable
+                    intent.putExtra("producto_objeto", producto);
+                    itemView.getContext().startActivity(intent);
                 }
             });
         }

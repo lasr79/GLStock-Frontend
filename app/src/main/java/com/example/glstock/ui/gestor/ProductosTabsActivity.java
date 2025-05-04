@@ -1,5 +1,6 @@
 package com.example.glstock.ui.gestor;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -19,9 +20,10 @@ import com.example.glstock.api.ProductoService;
 import com.example.glstock.databinding.ActivityProductosTabsBinding;
 import com.example.glstock.model.Categoria;
 import com.example.glstock.model.Producto;
+import com.example.glstock.ui.MainActivity;
+import com.example.glstock.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
@@ -61,6 +63,11 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         // Configurar botón de búsqueda
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
+
+        binding.fabAddProduct.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProductoDetalleActivity.class);
+            startActivity(intent);
+        });
 
         // Configurar chips de filtrado
         configurarChips();
@@ -152,7 +159,6 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
                     // Aquí deberíamos mostrar los resultados
-                    // Podríamos crear un nuevo fragmento o actualizar el actual
                     if (response.body().isEmpty()) {
                         Toast.makeText(ProductosTabsActivity.this,
                                 "No se encontraron productos con ese nombre",
@@ -160,8 +166,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     } else {
                         // Navegar a pestaña "Todos" y actualizar con resultados
                         binding.viewPager.setCurrentItem(0);
-                        // Idealmente deberíamos tener un método para actualizar
-                        // los productos en el fragmento actual
+                        actualizarFragmentoActual(response.body());
                     }
                 } else {
                     Toast.makeText(ProductosTabsActivity.this,
@@ -282,21 +287,23 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Manejar navegación del bottom menu
         int itemId = item.getItemId();
 
         if (itemId == R.id.navigation_inicio) {
-            finish(); // Volver a inicio
+            startActivity(new Intent(this, MainActivity.class));
+            finish(); // Importante terminar esta actividad
             return true;
         } else if (itemId == R.id.navigation_reportes) {
-            // Ir a reportes
-            // Intent intent = new Intent(this, ReportesActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("fragment", "reportes");
+            startActivity(intent);
             return true;
         } else if (itemId == R.id.navigation_usuarios) {
-            // Ir a usuarios (solo admin)
-            // Intent intent = new Intent(this, UsuariosActivity.class);
-            // startActivity(intent);
+            if (SessionManager.getInstance().isAdmin()) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("fragment", "usuarios");
+                startActivity(intent);
+            }
             return true;
         }
 

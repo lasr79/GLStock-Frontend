@@ -56,8 +56,15 @@ public class ProductosActivity extends AppCompatActivity implements ProductoAdap
         binding.rvProductos.setLayoutManager(new LinearLayoutManager(this));
         binding.rvProductos.setAdapter(adapter);
 
-        // Configurar botón de búsqueda
-        binding.btnBuscar.setOnClickListener(v -> buscarProductos());
+        // Configurar botón de búsqueda (CAMBIO AQUÍ)
+        binding.btnBuscar.setOnClickListener(v -> {
+            String query = binding.etBuscar.getText().toString().trim();
+            if (!TextUtils.isEmpty(query)) {
+                buscarProductos();
+            } else {
+                Toast.makeText(this, "Ingrese un término de búsqueda", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Cargar productos iniciales
         cargarProductosRecientes();

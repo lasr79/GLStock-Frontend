@@ -46,6 +46,10 @@
             android:name=".ui.gestor.ProductosTabsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.gestor.ProductoDetalleActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

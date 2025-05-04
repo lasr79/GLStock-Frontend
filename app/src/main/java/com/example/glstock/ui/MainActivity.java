@@ -34,9 +34,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
         }
 
-        // Cargar fragmento inicial
+        // Cargar fragmento inicial o el fragmento especificado por el intent
         if (savedInstanceState == null) {
-            loadFragment(new InicioFragment());
+            if (getIntent().hasExtra("fragment")) {
+                String fragmentToLoad = getIntent().getStringExtra("fragment");
+                if ("reportes".equals(fragmentToLoad)) {
+                    loadFragment(new ReportesFragment());
+                    binding.bottomNavigation.setSelectedItemId(R.id.navigation_reportes);
+                } else if ("usuarios".equals(fragmentToLoad) && SessionManager.getInstance().isAdmin()) {
+                    loadFragment(new UsuariosFragment());
+                    binding.bottomNavigation.setSelectedItemId(R.id.navigation_usuarios);
+                } else {
+                    loadFragment(new InicioFragment());
+                }
+            } else {
+                loadFragment(new InicioFragment());
+            }
         }
     }
 

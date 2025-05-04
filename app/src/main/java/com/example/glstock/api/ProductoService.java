@@ -38,4 +38,7 @@ public interface ProductoService {
 
     @DELETE("api/productos/{id}")
     Call<Void> eliminarProducto(@Path("id") Long id);
+
+    @GET("api/productos/{id}")
+    Call<Producto> buscarPorId(@Path("id") Long id);
 }

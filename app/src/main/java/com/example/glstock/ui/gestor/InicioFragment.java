@@ -17,6 +17,7 @@ import com.example.glstock.api.ProductoService;
 import com.example.glstock.databinding.FragmentInicioBinding;
 import com.example.glstock.model.Movimiento;
 import com.example.glstock.model.Producto;
+import com.example.glstock.ui.LoginActivity;
 import com.example.glstock.util.SessionManager;
 
 import java.util.HashMap;
@@ -47,13 +48,36 @@ public class InicioFragment extends Fragment {
         productoService = ApiClient.getClient().create(ProductoService.class);
         movimientoService = ApiClient.getClient().create(MovimientoService.class);
 
-        // Configurar saludo al usuario
+        // Configurar información del usuario
         String nombreUsuario = SessionManager.getInstance().getUserEmail();
+        String email = nombreUsuario; // O extraer el nombre del email
+        String role = SessionManager.getInstance().getUserRole();
+
+        // Extraer nombre del correo (ejemplo simple)
+        if (email.contains("@")) {
+            nombreUsuario = email.substring(0, email.indexOf('@'));
+            // Capitalizar primera letra
+            nombreUsuario = nombreUsuario.substring(0, 1).toUpperCase() + nombreUsuario.substring(1);
+        }
+
         binding.tvUserGreeting.setText("Hola, " + nombreUsuario);
+        binding.tvUserEmail.setText(email);
+        binding.tvUserRole.setText(role);
 
         // Configurar botones
         binding.btnConsultarProductos.setOnClickListener(v -> navigateToProductos());
         binding.btnRegistrarMovimiento.setOnClickListener(v -> navigateToMovimientos());
+
+        binding.btnLogout.setOnClickListener(v -> {
+            // Limpiar sesión
+            SessionManager.getInstance().clearAuthData();
+
+            // Ir a la pantalla de login
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            getActivity().finish();
+        });
 
         // Cargar datos
         loadDashboardData();
