@@ -51,26 +51,21 @@ public class UsuarioDetalleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_usuario_detalle);
 
-        // Inicializar vistas
         inicializarVistas();
 
-        // Configurar toolbar
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Inicializar servicio
         usuarioService = ApiClient.getClient().create(UsuarioService.class);
 
-        // Configurar spinner de roles
         List<String> roles = Arrays.asList("ADMIN", "GESTOR");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, roles);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerRol.setAdapter(adapter);
 
-        // Verificar si estamos en modo edición o creación
         if (getIntent().hasExtra("usuario_objeto")) {
             modoEdicion = true;
             usuarioActual = (Usuario) getIntent().getSerializableExtra("usuario_objeto");
@@ -82,12 +77,11 @@ public class UsuarioDetalleActivity extends AppCompatActivity {
             modoEdicion = false;
             usuarioActual = new Usuario();
             getSupportActionBar().setTitle("Nuevo Usuario");
-            btnEliminar.setVisibility(View.GONE); // Ocultar botón eliminar en modo creación
+            btnEliminar.setVisibility(View.GONE);
             tilContrasena.setHint("Contraseña");
             etContrasena.setHint("Contraseña");
         }
 
-        // Configurar botones
         btnGuardar.setOnClickListener(v -> guardarUsuario());
         btnEliminar.setOnClickListener(v -> confirmarEliminarUsuario());
     }
@@ -121,7 +115,6 @@ public class UsuarioDetalleActivity extends AppCompatActivity {
     }
 
     private void guardarUsuario() {
-        // Validar campos obligatorios
         if (TextUtils.isEmpty(etNombre.getText())) {
             etNombre.setError("El nombre es obligatorio");
             return;
@@ -137,23 +130,24 @@ public class UsuarioDetalleActivity extends AppCompatActivity {
             return;
         }
 
-        // Actualizar datos del usuario
         usuarioActual.setNombre(etNombre.getText().toString());
         usuarioActual.setApellido(etApellido.getText().toString());
         usuarioActual.setCorreo(etCorreo.getText().toString());
 
-        // Contraseña solo si se proporciona
         String contrasena = etContrasena.getText().toString();
         if (!TextUtils.isEmpty(contrasena)) {
             usuarioActual.setContrasena(contrasena);
         }
 
-        // Rol
         usuarioActual.setRol(spinnerRol.getSelectedItemPosition() == 0 ? Rol.ADMIN : Rol.GESTOR);
+
+        // 👇 Asegurarse de conservar la fecha de creación si estamos editando
+        if (modoEdicion && usuarioActual.getFechaCreacion() != null) {
+            usuarioActual.setFechaCreacion(usuarioActual.getFechaCreacion());
+        }
 
         showProgress(true);
 
-        // Guardar usuario (crear o actualizar)
         Call<Usuario> call;
         if (modoEdicion) {
             call = usuarioService.actualizarUsuario(usuarioActual.getId(), usuarioActual);

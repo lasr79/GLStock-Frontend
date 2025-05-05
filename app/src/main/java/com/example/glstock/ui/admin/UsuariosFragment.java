@@ -42,24 +42,21 @@ public class UsuariosFragment extends Fragment implements UsuarioAdapter.OnUsuar
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializar servicios
         usuarioService = ApiClient.getClient().create(UsuarioService.class);
 
-        // Configurar RecyclerView
         adapter = new UsuarioAdapter(this);
         binding.rvUsuarios.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvUsuarios.setAdapter(adapter);
 
-        // Configurar botones
+        // Ocultar búsqueda por ID
+        binding.rbId.setVisibility(View.GONE);
+
         binding.btnBuscarUsuario.setOnClickListener(v -> buscarUsuarios());
         binding.btnNuevoUsuario.setOnClickListener(v -> navegarANuevoUsuario());
 
-        // Configurar radiobuttons
         binding.rgFiltroUsuario.setOnCheckedChangeListener((group, checkedId) -> {
-            String hint = "Buscar......";
-            if (checkedId == binding.rbId.getId()) {
-                hint = "Buscar por ID...";
-            } else if (checkedId == binding.rbNombre.getId()) {
+            String hint = "Buscar...";
+            if (checkedId == binding.rbNombre.getId()) {
                 hint = "Buscar por nombre...";
             } else if (checkedId == binding.rbEmail.getId()) {
                 hint = "Buscar por email...";
@@ -67,114 +64,47 @@ public class UsuariosFragment extends Fragment implements UsuarioAdapter.OnUsuar
             binding.etBuscarUsuario.setHint(hint);
         });
 
-        // Cargar usuarios
         cargarUsuarios();
     }
 
     private void cargarUsuarios() {
         showProgress(true);
-        // Para cargar todos los usuarios necesitaríamos un endpoint que los liste todos
-        // Por ahora, usaremos la búsqueda con un término vacío para obtener todos
         buscarUsuarios();
     }
 
     private void buscarUsuarios() {
-        String query = binding.etBuscarUsuario.getText().toString().trim();
-
-        if (TextUtils.isEmpty(query)) {
-            query = ""; // Búsqueda vacía para obtener todos
-        }
+        final String query = binding.etBuscarUsuario.getText().toString().trim();
 
         showProgress(true);
 
-        // Dependiendo del radiobutton seleccionado, realizamos diferentes tipos de búsqueda
-        // Nota: En tu backend solo tienes búsqueda por nombre, así que para ID y Email
-        // necesitarías implementar esos endpoints
-
-        if (binding.rbId.isChecked() && !TextUtils.isEmpty(query)) {
-            // Buscar por ID (simular esto filtrando resultados)
-            try {
-                Long id = Long.parseLong(query);
-                buscarUsuariosPorNombre("").enqueue(new Callback<List<Usuario>>() {
-                    @Override
-                    public void onResponse(Call<List<Usuario>> call, Response<List<Usuario>> response) {
-                        showProgress(false);
-                        if (response.isSuccessful() && response.body() != null) {
-                            // Filtrar manualmente para encontrar el ID
-                            Usuario usuarioEncontrado = null;
-                            for (Usuario usuario : response.body()) {
-                                if (usuario.getId().equals(id)) {
-                                    usuarioEncontrado = usuario;
-                                    break;
-                                }
-                            }
-
-                            List<Usuario> usuarios = new ArrayList<>();
-                            if (usuarioEncontrado != null) {
-                                usuarios.add(usuarioEncontrado);
-                            }
-
-                            adapter.setUsuarios(usuarios);
-                            if (usuarios.isEmpty()) {
-                                mostrarMensajeNoResultados("No se encontró usuario con ese ID");
-                            }
-                        } else {
-                            Toast.makeText(getContext(),
-                                    "Error al buscar usuarios: " + response.message(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<Usuario>> call, Throwable t) {
-                        showProgress(false);
-                        Toast.makeText(getContext(),
-                                "Error: " + t.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (NumberFormatException e) {
-                showProgress(false);
-                Toast.makeText(getContext(), "ID inválido", Toast.LENGTH_SHORT).show();
-            }
-        } else if (binding.rbEmail.isChecked()) {
-            // Buscar por Email (simular esto filtrando resultados)
-            String finalQuery = query;
+        if (binding.rbEmail.isChecked()) {
             buscarUsuariosPorNombre("").enqueue(new Callback<List<Usuario>>() {
                 @Override
                 public void onResponse(Call<List<Usuario>> call, Response<List<Usuario>> response) {
                     showProgress(false);
                     if (response.isSuccessful() && response.body() != null) {
-                        // Filtrar manualmente para encontrar emails que coincidan
-                        List<Usuario> usuariosFiltrados = new ArrayList<>();
-                        for (Usuario usuario : response.body()) {
-                            if (TextUtils.isEmpty(finalQuery) ||
-                                    usuario.getCorreo().toLowerCase().contains(finalQuery.toLowerCase())) {
-                                usuariosFiltrados.add(usuario);
+                        List<Usuario> filtrados = new ArrayList<>();
+                        for (Usuario u : response.body()) {
+                            if (TextUtils.isEmpty(query) || u.getCorreo().toLowerCase().contains(query.toLowerCase())) {
+                                filtrados.add(u);
                             }
                         }
-
-                        adapter.setUsuarios(usuariosFiltrados);
-                        if (usuariosFiltrados.isEmpty()) {
+                        adapter.setUsuarios(filtrados);
+                        if (filtrados.isEmpty()) {
                             mostrarMensajeNoResultados("No se encontraron usuarios con ese email");
                         }
                     } else {
-                        Toast.makeText(getContext(),
-                                "Error al buscar usuarios: " + response.message(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error al buscar usuarios: " + response.message(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<Usuario>> call, Throwable t) {
                     showProgress(false);
-                    Toast.makeText(getContext(),
-                            "Error: " + t.getMessage(),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
-            // Buscar por nombre (método por defecto)
             buscarUsuariosPorNombre(query).enqueue(new Callback<List<Usuario>>() {
                 @Override
                 public void onResponse(Call<List<Usuario>> call, Response<List<Usuario>> response) {
@@ -185,18 +115,14 @@ public class UsuariosFragment extends Fragment implements UsuarioAdapter.OnUsuar
                             mostrarMensajeNoResultados("No se encontraron usuarios con ese nombre");
                         }
                     } else {
-                        Toast.makeText(getContext(),
-                                "Error al buscar usuarios: " + response.message(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error al buscar usuarios: " + response.message(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<Usuario>> call, Throwable t) {
                     showProgress(false);
-                    Toast.makeText(getContext(),
-                            "Error: " + t.getMessage(),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }

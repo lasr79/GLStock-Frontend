@@ -35,14 +35,27 @@ public class ApiClient {
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>)
                             (json, type, context) -> LocalDate.parse(json.getAsJsonPrimitive().getAsString()))
-                    .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>)
-                            (json, type, context) -> LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(),
-                                    DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+
+                    .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+                        @Override
+                        public JsonElement serialize(LocalDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+                            return new JsonPrimitive(src.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                        }
+                    })
+
+                    .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+                        @Override
+                        public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                            return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        }
+                    })
+
                     .registerTypeAdapter(Date.class, (JsonDeserializer<Date>)
                             (json, type, context) -> Date.valueOf(json.getAsString()))
                     .registerTypeAdapter(Date.class, (JsonSerializer<Date>)
-                            (src, typeOfSrc, context) -> new JsonPrimitive(src.toString())) // <-- ESTO ES CLAVE
+                            (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
                     .create();
+
 
             // Construir Retrofit
             retrofit = new Retrofit.Builder()
