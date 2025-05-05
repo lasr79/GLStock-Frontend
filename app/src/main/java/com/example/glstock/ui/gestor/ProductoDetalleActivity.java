@@ -25,6 +25,7 @@ import com.example.glstock.api.CategoriaService;
 import com.example.glstock.api.ProductoService;
 import com.example.glstock.model.Categoria;
 import com.example.glstock.model.Producto;
+import com.example.glstock.util.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -37,15 +38,9 @@ import retrofit2.Response;
 public class ProductoDetalleActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private Button btnEliminar;
-    private Button btnGuardar;
-    private Button btnNuevaCategoria;
+    private Button btnEliminar, btnGuardar, btnNuevaCategoria;
     private Spinner spinnerCategoria;
-    private TextInputEditText etNombre;
-    private TextInputEditText etDescripcion;
-    private TextInputEditText etPrecio;
-    private TextInputEditText etCantidad;
-    private TextInputEditText etUrlImagen;
+    private TextInputEditText etNombre, etDescripcion, etPrecio, etCantidad, etUrlImagen;
     private ImageView ivProducto;
     private ProgressBar progressBar;
     private LinearLayout buttonsContainer;
@@ -63,56 +58,46 @@ public class ProductoDetalleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_producto_detalle);
 
-        // Inicializar vistas
         inicializarVistas();
-
-        if (getIntent().hasExtra("producto_objeto")) {
-            modoEdicion = true;
-            productoActual = (Producto) getIntent().getSerializableExtra("producto_objeto");
-            if (productoActual != null) {
-                mostrarDatosProducto();
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle("Editar Producto");
-                }
-            }
-        }
-
-        // Configurar toolbar
         setSupportActionBar(toolbar);
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Inicializar servicios
         productoService = ApiClient.getClient().create(ProductoService.class);
         categoriaService = ApiClient.getClient().create(CategoriaService.class);
 
-        // Verificar si estamos en modo edición (recibiendo un producto existente)
-        if (getIntent().hasExtra("producto_id")) {
-            modoEdicion = true;
-            long productoId = getIntent().getLongExtra("producto_id", -1);
-            if (productoId != -1) {
-                cargarProducto(productoId);
+        productoActual = (Producto) getIntent().getSerializableExtra("producto_objeto");
+
+        boolean esAdmin = SessionManager.getInstance().isAdmin();
+
+        if (productoActual != null) {
+            mostrarDatosProducto();
+            if (esAdmin) {
                 getSupportActionBar().setTitle("Editar Producto");
+                btnGuardar.setVisibility(View.VISIBLE);
+                btnEliminar.setVisibility(View.VISIBLE);
+                modoEdicion = true;
+            } else {
+                getSupportActionBar().setTitle("Detalle Producto");
+                btnGuardar.setVisibility(View.GONE);
+                btnEliminar.setVisibility(View.GONE);
+                desactivarCampos();
             }
         } else {
-            modoEdicion = false;
             productoActual = new Producto();
-            java.util.Calendar calendar = java.util.Calendar.getInstance();
-            java.sql.Date fechaActual = new java.sql.Date(calendar.getTimeInMillis());
-            productoActual.setFechaIngreso(fechaActual);
+            productoActual.setFechaIngreso(new java.sql.Date(System.currentTimeMillis()));
             getSupportActionBar().setTitle("Nuevo Producto");
-            btnEliminar.setVisibility(View.GONE); // Ocultar botón eliminar en modo creación
+            btnEliminar.setVisibility(View.GONE);
+            btnGuardar.setVisibility(View.VISIBLE);
+            modoEdicion = false;
         }
 
-        // Cargar categorías para el spinner
         cargarCategorias();
 
-        // Configurar botones
         btnGuardar.setOnClickListener(v -> guardarProducto());
         btnEliminar.setOnClickListener(v -> confirmarEliminarProducto());
-
-        // Agregar botón para crear categoría
         btnNuevaCategoria.setOnClickListener(v -> {
             Intent intent = new Intent(this, CategoriaDetalleActivity.class);
             startActivityForResult(intent, REQUEST_NUEVA_CATEGORIA);
@@ -135,43 +120,6 @@ public class ProductoDetalleActivity extends AppCompatActivity {
         buttonsContainer = findViewById(R.id.buttonsContainer);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_NUEVA_CATEGORIA && resultCode == RESULT_OK) {
-            // Actualizar lista de categorías
-            cargarCategorias();
-            Toast.makeText(this, "Categoría creada con éxito", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void cargarProducto(long productoId) {
-        showProgress(true);
-        Call<Producto> call = productoService.buscarPorId(productoId);
-        call.enqueue(new Callback<Producto>() {
-            @Override
-            public void onResponse(Call<Producto> call, Response<Producto> response) {
-                showProgress(false);
-                if (response.isSuccessful() && response.body() != null) {
-                    productoActual = response.body();
-                    mostrarDatosProducto();
-                } else {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Error al cargar producto", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Producto> call, Throwable t) {
-                showProgress(false);
-                Toast.makeText(ProductoDetalleActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        });
-    }
-
     private void cargarCategorias() {
         showProgress(true);
         categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
@@ -181,33 +129,28 @@ public class ProductoDetalleActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     categorias = response.body();
                     configurarSpinnerCategorias();
-                    // Si estamos en modo edición, seleccionar la categoría del producto
-                    if (modoEdicion && productoActual != null && productoActual.getCategoria() != null) {
+                    if (modoEdicion && productoActual.getCategoria() != null) {
                         seleccionarCategoria(productoActual.getCategoria().getId());
                     }
-                } else {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Error al cargar categorías", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Categoria>> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductoDetalleActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductoDetalleActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void configurarSpinnerCategorias() {
-        List<String> nombresCategorias = new ArrayList<>();
-        for (Categoria categoria : categorias) {
-            nombresCategorias.add(categoria.getNombre());
+        List<String> nombres = new ArrayList<>();
+        for (Categoria c : categorias) {
+            nombres.add(c.getNombre());
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, nombresCategorias);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, nombres);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategoria.setAdapter(adapter);
     }
@@ -228,82 +171,55 @@ public class ProductoDetalleActivity extends AppCompatActivity {
         etCantidad.setText(String.valueOf(productoActual.getCantidad()));
         etUrlImagen.setText(productoActual.getUrlImagen());
 
-        // Cargar imagen si existe URL
         if (!TextUtils.isEmpty(productoActual.getUrlImagen())) {
             Glide.with(this)
                     .load(productoActual.getUrlImagen())
                     .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_launcher_background)
                     .into(ivProducto);
         }
     }
 
     private void guardarProducto() {
-        // Validar campos obligatorios
         if (TextUtils.isEmpty(etNombre.getText())) {
-            etNombre.setError("El nombre es obligatorio");
+            etNombre.setError("Campo obligatorio");
             return;
         }
 
-        if (TextUtils.isEmpty(etPrecio.getText())) {
-            etPrecio.setError("El precio es obligatorio");
+        int pos = spinnerCategoria.getSelectedItemPosition();
+        if (pos < 0 || pos >= categorias.size()) {
+            Toast.makeText(this, "Seleccione una categoría válida", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (TextUtils.isEmpty(etCantidad.getText())) {
-            etCantidad.setError("La cantidad es obligatoria");
-            return;
-        }
-
-        // Obtener categoría seleccionada
-        int posicionCategoria = spinnerCategoria.getSelectedItemPosition();
-        if (posicionCategoria < 0 || posicionCategoria >= categorias.size()) {
-            Toast.makeText(this, "Seleccione una categoría", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Categoria categoriaSeleccionada = categorias.get(posicionCategoria);
-
-        // Actualizar datos del producto
         productoActual.setNombre(etNombre.getText().toString());
         productoActual.setDescripcion(etDescripcion.getText().toString());
-        productoActual.setCategoria(categoriaSeleccionada);
         productoActual.setPrecio(Double.parseDouble(etPrecio.getText().toString()));
         productoActual.setCantidad(Integer.parseInt(etCantidad.getText().toString()));
         productoActual.setUrlImagen(etUrlImagen.getText().toString());
+        productoActual.setCategoria(categorias.get(pos));
 
         showProgress(true);
 
-        // Guardar producto (crear o actualizar)
-        Call<Producto> call;
-        if (modoEdicion && productoActual.getId() != null) {
-            // Verificar que se está enviando el ID
-            Long idProducto = productoActual.getId();
-            System.out.println("Actualizando producto con ID: " + idProducto);
-            call = productoService.actualizarProducto(idProducto, productoActual);
-        } else {
-            call = productoService.crearProducto(productoActual);
-        }
+        Call<Producto> call = (modoEdicion && productoActual.getId() != null)
+                ? productoService.actualizarProducto(productoActual.getId(), productoActual)
+                : productoService.crearProducto(productoActual);
 
         call.enqueue(new Callback<Producto>() {
             @Override
             public void onResponse(Call<Producto> call, Response<Producto> response) {
                 showProgress(false);
-                if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Producto guardado con éxito", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful()) {
+                    Toast.makeText(ProductoDetalleActivity.this, "Guardado exitosamente", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Error al guardar producto: " + response.message(),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductoDetalleActivity.this, "Error al guardar", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Producto> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductoDetalleActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductoDetalleActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -311,17 +227,14 @@ public class ProductoDetalleActivity extends AppCompatActivity {
     private void confirmarEliminarProducto() {
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar Producto")
-                .setMessage("¿Está seguro que desea eliminar este producto?")
-                .setPositiveButton("Eliminar", (dialog, which) -> eliminarProducto())
+                .setMessage("¿Seguro que deseas eliminarlo?")
+                .setPositiveButton("Eliminar", (d, w) -> eliminarProducto())
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
     private void eliminarProducto() {
-        if (productoActual == null || productoActual.getId() == null) {
-            Toast.makeText(this, "No se puede eliminar el producto", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (productoActual.getId() == null) return;
 
         showProgress(true);
         productoService.eliminarProducto(productoActual.getId()).enqueue(new Callback<Void>() {
@@ -329,23 +242,29 @@ public class ProductoDetalleActivity extends AppCompatActivity {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 showProgress(false);
                 if (response.isSuccessful()) {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Producto eliminado con éxito", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductoDetalleActivity.this, "Eliminado con éxito", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    Toast.makeText(ProductoDetalleActivity.this,
-                            "Error al eliminar producto: " + response.message(),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductoDetalleActivity.this, "Error al eliminar", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 showProgress(false);
-                Toast.makeText(ProductoDetalleActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductoDetalleActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void desactivarCampos() {
+        etNombre.setEnabled(false);
+        etDescripcion.setEnabled(false);
+        etPrecio.setEnabled(false);
+        etCantidad.setEnabled(false);
+        etUrlImagen.setEnabled(false);
+        spinnerCategoria.setEnabled(false);
+        btnNuevaCategoria.setVisibility(View.GONE);
     }
 
     private void showProgress(boolean show) {
@@ -356,7 +275,7 @@ public class ProductoDetalleActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -83,10 +83,7 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
 
     class ProductoViewHolder extends RecyclerView.ViewHolder {
         private ImageView ivProducto;
-        private TextView tvNombreProducto;
-        private TextView tvCategoria;
-        private TextView tvStock;
-        private TextView tvPrecio;
+        private TextView tvNombreProducto, tvCategoria, tvStock, tvPrecio;
 
         public ProductoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -99,16 +96,7 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
-                    Producto producto = productos.get(position);
-
-                    // Llamamos al método en el listener (la actividad que implementa la interfaz)
-                    listener.onProductoClick(producto);
-
-                    // También iniciamos directamente la actividad de detalle
-                    Intent intent = new Intent(itemView.getContext(), ProductoDetalleActivity.class);
-                    // Pasar el producto como extra serializable
-                    intent.putExtra("producto_objeto", producto);
-                    itemView.getContext().startActivity(intent);
+                    listener.onProductoClick(productos.get(position)); // solo esto
                 }
             });
         }
@@ -120,7 +108,6 @@ public class ProductoCardAdapter extends RecyclerView.Adapter<ProductoCardAdapte
             tvStock.setText("Stock: " + producto.getCantidad());
             tvPrecio.setText(String.format("%.2f€", producto.getPrecio()));
 
-            // Cargar imagen con Glide
             if (producto.getUrlImagen() != null && !producto.getUrlImagen().isEmpty()) {
                 Glide.with(itemView.getContext())
                         .load(producto.getUrlImagen())
