@@ -50,6 +50,14 @@
             android:name=".ui.gestor.ProductoDetalleActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.admin.UsuarioDetalleActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.gestor.CategoriaDetalleActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

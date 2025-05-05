@@ -14,15 +14,18 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface UsuarioService {
-    @POST("api/usuarios")
+    @POST("api/usuarios/crear")
     Call<Usuario> crearUsuario(@Body Usuario usuario);
 
-    @PUT("api/usuarios/{id}")
+    @PUT("api/usuarios/actualizar/{id}")
     Call<Usuario> actualizarUsuario(@Path("id") Long id, @Body Usuario usuario);
 
-    @DELETE("api/usuarios/{id}")
+    @DELETE("api/usuarios/eliminar/{id}")
     Call<Void> eliminarUsuario(@Path("id") Long id);
 
-    @GET("api/usuarios")
+    @GET("api/usuarios/buscar-nombre")
     Call<List<Usuario>> buscarUsuariosPorNombre(@Query("nombre") String nombre);
+
+    @GET("api/usuarios/listar")
+    Call<List<Usuario>> listarTodos();
 }

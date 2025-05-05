@@ -207,14 +207,8 @@ public class UsuariosFragment extends Fragment implements UsuarioAdapter.OnUsuar
     }
 
     private void navegarANuevoUsuario() {
-        // Intent para navegar a la actividad de creación de usuarios
-        // Intent intent = new Intent(getActivity(), NuevoUsuarioActivity.class);
-        // startActivity(intent);
-
-        // Por ahora, solo mostramos un mensaje
-        Toast.makeText(getContext(),
-                "Funcionalidad de crear usuario no implementada",
-                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), UsuarioDetalleActivity.class);
+        startActivity(intent);
     }
 
     private void mostrarMensajeNoResultados(String mensaje) {
@@ -227,10 +221,9 @@ public class UsuariosFragment extends Fragment implements UsuarioAdapter.OnUsuar
 
     @Override
     public void onUsuarioClick(Usuario usuario) {
-        // Aquí podrías mostrar opciones para editar o eliminar el usuario
-        Toast.makeText(getContext(),
-                "Usuario seleccionado: " + usuario.getNombre(),
-                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), UsuarioDetalleActivity.class);
+        intent.putExtra("usuario_objeto", usuario);
+        startActivity(intent);
     }
 
     @Override

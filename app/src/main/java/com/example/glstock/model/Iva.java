@@ -1,6 +1,8 @@
 package com.example.glstock.model;
 
-public class Iva {
+import java.io.Serializable;
+
+public class Iva implements Serializable {
     private Long id;
     private Double porcentaje;
 

@@ -1,5 +1,7 @@
 package com.example.glstock.model;
 
-public enum Rol {
+import java.io.Serializable;
+
+public enum Rol implements Serializable {
     ADMIN, GESTOR
 }

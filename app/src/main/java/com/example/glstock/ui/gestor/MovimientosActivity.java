@@ -3,13 +3,14 @@ package com.example.glstock.ui.gestor;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.example.glstock.R;
 import com.example.glstock.api.ApiClient;
@@ -19,9 +20,9 @@ import com.example.glstock.databinding.ActivityMovimientosBinding;
 import com.example.glstock.model.Movimiento;
 import com.example.glstock.model.Producto;
 import com.example.glstock.model.TipoMovimiento;
-import com.example.glstock.model.Usuario;
 import com.example.glstock.ui.MainActivity;
 import com.example.glstock.util.SessionManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MovimientosActivity extends AppCompatActivity {
+public class MovimientosActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     private ActivityMovimientosBinding binding;
     private ProductoService productoService;
@@ -48,7 +49,19 @@ public class MovimientosActivity extends AppCompatActivity {
             setSupportActionBar(binding.toolbar);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
                 getSupportActionBar().setTitle("Registrar Movimiento");
+            }
+        }
+
+        // Configurar BottomNavigationView
+        if (binding.bottomNavigation != null) {
+            binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+            // Mostrar u ocultar la sección de usuarios según el rol
+            MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
+            if (usuariosItem != null) {
+                usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
             }
         }
 
@@ -212,8 +225,42 @@ public class MovimientosActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        try {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_inicio) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.navigation_reportes) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("fragment", "reportes");
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.navigation_usuarios) {
+                if (SessionManager.getInstance().isAdmin()) {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.putExtra("fragment", "usuarios");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            Toast.makeText(this, "Error de navegación: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 }

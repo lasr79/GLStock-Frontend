@@ -1,5 +1,6 @@
 package com.example.glstock.ui.gestor;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +86,7 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
         cargarProductos();
     }
 
-    private void cargarProductos() {
+    public void cargarProductos() {
         if (categoria != null) {
             // Cargar productos por categoría
             Map<String, Long> datos = new HashMap<>();
@@ -152,9 +153,19 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
 
     @Override
     public void onProductoClick(Producto producto) {
+        // Eliminar este Toast o mantenerlo para debugar
         Toast.makeText(getContext(), "Producto seleccionado: " + producto.getNombre(),
                 Toast.LENGTH_SHORT).show();
-        // Aquí podrías abrir una actividad de detalle del producto o mostrar un diálogo
+
+        try {
+            // Navegación a ProductoDetalleActivity
+            Intent intent = new Intent(getContext(), ProductoDetalleActivity.class);
+            intent.putExtra("producto_objeto", producto);
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Error al abrir detalle: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

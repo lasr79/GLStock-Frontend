@@ -53,6 +53,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // Inicializar servicios
         productoService = ApiClient.getClient().create(ProductoService.class);
@@ -60,6 +61,12 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         // Configurar BottomNavigationView
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+        // Mostrar u ocultar la sección de usuarios según el rol
+        MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
+        if (usuariosItem != null) {
+            usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
+        }
 
         // Configurar botón de búsqueda
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
@@ -80,6 +87,20 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         // Cargar categorías para las pestañas
         cargarCategorias();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Actualizar productos al regresar a la actividad
+        if (binding.viewPager.getCurrentItem() == 0) {
+            // Si estamos en la pestaña "Todos", actualizar los productos
+            CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
+                    getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
+            if (fragmentoActual != null) {
+                fragmentoActual.cargarProductos();
+            }
+        }
     }
 
     private void configurarChips() {
@@ -261,26 +282,39 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
+        try {
+            int itemId = item.getItemId();
 
-        if (itemId == R.id.navigation_inicio) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return true;
-        } else if (itemId == R.id.navigation_reportes) {
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra("fragment", "reportes");
-            startActivity(intent);
-            return true;
-        } else if (itemId == R.id.navigation_usuarios) {
-            if (SessionManager.getInstance().isAdmin()) {
+            // Importante: finalizar la actividad actual antes de iniciar la nueva
+            if (itemId == R.id.navigation_inicio) {
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("fragment", "usuarios");
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish(); // Añadir esto
+                return true;
+            } else if (itemId == R.id.navigation_reportes) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("fragment", "reportes");
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish(); // Añadir esto
+                return true;
+            } else if (itemId == R.id.navigation_usuarios) {
+                if (SessionManager.getInstance().isAdmin()) {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.putExtra("fragment", "usuarios");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish(); // Añadir esto
+                    return true;
+                }
             }
-            return true;
+            return false;
+        } catch (Exception e) {
+            // Registrar el error para diagnóstico
+            e.printStackTrace();
+            Toast.makeText(this, "Error de navegación: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
         }
-
-        return false;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.glstock.model;
+import java.io.Serializable;
 
-public class Categoria {
+public class Categoria implements Serializable {
     private Long id;
     private String nombre;
     private Iva iva;

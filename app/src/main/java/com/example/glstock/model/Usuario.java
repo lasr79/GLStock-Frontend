@@ -1,8 +1,9 @@
 package com.example.glstock.model;
 
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
-public class Usuario {
+public class Usuario implements Serializable {
     private Long id;
     private String nombre;
     private String apellido;
