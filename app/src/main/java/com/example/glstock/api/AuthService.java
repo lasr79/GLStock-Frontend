@@ -9,6 +9,7 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface AuthService {
+    //Endpoint de login
     @POST("api/auth/login")
     Call<LoginResponse> login(@Body Map<String, String> loginData);
 }

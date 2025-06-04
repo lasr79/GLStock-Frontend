@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/GLStockCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- TÍTULO DEL DIÁLOGO -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:background="@drawable/rounded_button_background"
+                android:backgroundTint="@color/chip_background"
+                android:padding="6dp"
+                app:tint="@color/primary_blue"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                style="@style/GLStockTextHeading3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Seleccionar Período" />
+        </LinearLayout>
+
+        <!-- FECHA INICIO -->
+        <TextView
+            style="@style/GLStockTextSubtitle2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fecha de inicio"
+            android:layout_marginBottom="8dp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tvDesde"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Seleccionar Fecha Inicio"
+            android:layout_marginBottom="16dp"
+            android:gravity="start|center_vertical"
+            android:textAlignment="textStart"
+            app:strokeColor="@color/primary_blue"
+            android:textColor="@color/text_primary"
+            app:icon="@android:drawable/ic_menu_my_calendar"
+            app:iconTint="@color/primary_blue"
+            app:iconGravity="start" />
+
+        <!-- FECHA FIN -->
+        <TextView
+            style="@style/GLStockTextSubtitle2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fecha de fin"
+            android:layout_marginBottom="8dp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tvHasta"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Seleccionar Fecha Fin"
+            android:layout_marginBottom="24dp"
+            android:gravity="start|center_vertical"
+            android:textAlignment="textStart"
+            app:strokeColor="@color/primary_blue"
+            android:textColor="@color/text_primary"
+            app:icon="@android:drawable/ic_menu_my_calendar"
+            app:iconTint="@color/primary_blue"
+            app:iconGravity="start" />
+
+        <!-- DIVIDER -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gray_200"
+            android:layout_marginVertical="8dp" />
+
+        <!-- BOTONES DE ACCIÓN -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConsultar"
+                style="@style/GLStockButtonPrimary"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                app:icon="@android:drawable/ic_menu_search"
+                app:iconGravity="textStart" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

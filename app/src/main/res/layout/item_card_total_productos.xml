@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/iconTotal"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_inventory"
+            android:background="@drawable/rounded_button_background"
+            android:backgroundTint="@color/info_light"
+            android:padding="8dp"
+            app:tint="@color/info"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/btnTotalProductos"
+            style="@style/GLStockTextSubtitle1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Total Productos"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/iconTotal"
+            app:layout_constraintTop_toTopOf="@id/iconTotal"
+            app:layout_constraintEnd_toStartOf="@id/iconArrow"
+            android:layout_marginStart="16dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Listado completo de productos en inventario"
+            style="@style/GLStockTextCaption"
+            app:layout_constraintTop_toBottomOf="@id/btnTotalProductos"
+            app:layout_constraintStart_toStartOf="@id/btnTotalProductos"
+            app:layout_constraintEnd_toEndOf="@id/btnTotalProductos"
+            android:layout_marginTop="2dp" />
+
+        <ImageView
+            android:id="@+id/iconArrow"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_more"
+            app:tint="@color/text_tertiary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

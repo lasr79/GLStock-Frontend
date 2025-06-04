@@ -34,9 +34,6 @@
             android:name=".ui.MainActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".ui.gestor.ProductosActivity"
-            android:exported="false" />
 
         <activity
             android:name=".ui.gestor.MovimientosActivity"
@@ -56,6 +53,9 @@
 
         <activity
             android:name=".ui.gestor.CategoriaDetalleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.gestor.ReporteMovimientoActivity"
             android:exported="false" />
 
     </application>

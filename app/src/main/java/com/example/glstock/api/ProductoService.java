@@ -15,30 +15,31 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface ProductoService {
+    //Endpoint busqueda de todos producyos por nombre
     @GET("api/productos/buscar")
     Call<List<Producto>> buscarPorNombre(@Query("nombre") String nombre);
-
+    //Endpoint busqueda de catalogos  por id
     @POST("api/productos/categoria")
     Call<List<Producto>> buscarPorCategoria(@Body Map<String, Long> datos);
-
-    @POST("api/productos/menor-stock")
-    Call<List<Producto>> productosMenorStock(@Body Map<String, Object> datos);
-
+    //Endpoint busqueda de catalogos por nombre
+    @GET("api/productos/buscar-categoria")
+    Call<List<Producto>> buscarPorNombreCategoria(@Query("nombre") String nombreCategoria);
+    //Endpoint busqueda de los 5 productos con menor cantidad (stock)
     @GET("api/productos/stock-menor")
     Call<List<Producto>> obtenerProductosConMenorStock();
-
+    //Endpoint busqueda de los 5 productos con menor cantidad (stock)
     @GET("api/productos/recientes")
     Call<List<Producto>> productosRecientes();
-
+    //Endpoint crear producto
     @POST("api/productos/crear")
     Call<Producto> crearProducto(@Body Producto producto);
-
+    //Endpoint actualizacion del producto
     @PUT("api/productos/actualizar/{id}")
     Call<Producto> actualizarProducto(@Path("id") Long id, @Body Producto producto);
-
+    //Endpoint Elimina producto por id
     @DELETE("api/productos/eliminar/{id}")
     Call<Void> eliminarProducto(@Path("id") Long id);
-
-    @GET("api/productos/buscar-id/{id}")
-    Call<Producto> buscarPorId(@Path("id") Long id);
+    //Endpoint busqueda de todos los producto
+    @GET("api/productos/todos")
+    Call<List<Producto>> obtenerTodosLosProductos();
 }

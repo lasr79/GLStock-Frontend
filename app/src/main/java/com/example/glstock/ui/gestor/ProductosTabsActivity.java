@@ -3,6 +3,7 @@ package com.example.glstock.ui.gestor;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.glstock.R;
 import com.example.glstock.adapter.ProductoCardAdapter;
@@ -17,6 +19,7 @@ import com.example.glstock.adapter.ProductoCategoriasPagerAdapter;
 import com.example.glstock.api.ApiClient;
 import com.example.glstock.api.CategoriaService;
 import com.example.glstock.api.ProductoService;
+import com.example.glstock.api.ReporteService;
 import com.example.glstock.databinding.ActivityProductosTabsBinding;
 import com.example.glstock.model.Categoria;
 import com.example.glstock.model.Producto;
@@ -26,292 +29,343 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+// Actividad principal que muestra productos
 public class ProductosTabsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
-
+    // Enlace al layout mediante ViewBinding
     private ActivityProductosTabsBinding binding;
+    // Servicios API para productos, categorias y reportes
     private ProductoService productoService;
     private CategoriaService categoriaService;
+    private ReporteService reporteService;
+    // Adaptador para ViewPager y fragmento principal de consultas
     private ProductoCategoriasPagerAdapter pagerAdapter;
+    private CategoriaProductosFragment consultasFragment;
+    // Lista de categorias cargadas desde la API
     private List<Categoria> categorias = new ArrayList<>();
+    // Variables de estado
+    private String filtroActivo = "consultas";
+    private String categoriaDesdeIntent = null;
+    private boolean desdeReporte = false;
+    private boolean ignorarCambioPestaña = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityProductosTabsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Configurar Toolbar
+        // Configuraciones iniciales
+        configurarToolbar();
+        inicializarServicios();
+        configurarBottomNavigation();
+        configurarAcciones();
+        // Revisa si viene desde Reportes y captura datos enviados por Intent
+        String modo = getIntent().getStringExtra("modo_reporte");
+        categoriaDesdeIntent = getIntent().getStringExtra("categoria");
+        desdeReporte = modo != null;
+        ignorarCambioPestaña = desdeReporte;
+        cargarCategorias(modo, categoriaDesdeIntent);
+    }
+    // Configura el Toolbar con boton de retroceso
+    private void configurarToolbar() {
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-        // Inicializar servicios
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+    // Inicializa los servicios API
+    private void inicializarServicios() {
         productoService = ApiClient.getClient().create(ProductoService.class);
         categoriaService = ApiClient.getClient().create(CategoriaService.class);
-
-        // Configurar BottomNavigationView
+        reporteService = ApiClient.getClient().create(ReporteService.class);
+    }
+    // Configura el BottomNavigation y muestra "Usuarios" solo si es admin
+    private void configurarBottomNavigation() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
-
-        // Mostrar u ocultar la sección de usuarios según el rol
         MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
         if (usuariosItem != null) {
             usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
         }
-
-        // Configurar botón de búsqueda
+    }
+    // Configura botones y chips
+    private void configurarAcciones() {
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
-
-        // Mostrar el botón flotante solo si el usuario es ADMIN
+        // Boton de agregar producto (solo admin)
         if (SessionManager.getInstance().isAdmin()) {
             binding.fabAddProduct.setVisibility(View.VISIBLE);
-            binding.fabAddProduct.setOnClickListener(v -> {
-                Intent intent = new Intent(this, ProductoDetalleActivity.class);
-                startActivity(intent);
-            });
+            binding.fabAddProduct.setOnClickListener(v -> startActivity(new Intent(this, ProductoDetalleActivity.class)));
         } else {
             binding.fabAddProduct.setVisibility(View.GONE);
         }
-
-        // Configurar chips de filtrado
+        // Boton de generar PDF
+        binding.fabGenerarPdf.setOnClickListener(v -> generarPdfSegunFiltro());
+        // Chips para filtros
         configurarChips();
-
-        // Cargar categorías para las pestañas
-        cargarCategorias();
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Actualizar productos al regresar a la actividad
-        if (binding.viewPager.getCurrentItem() == 0) {
-            // Si estamos en la pestaña "Todos", actualizar los productos
-            CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
-                    getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
-            if (fragmentoActual != null) {
-                fragmentoActual.cargarProductos();
+    // Carga las categorias y configura las pestañas
+    private void cargarCategorias(String modo, String categoriaReporte) {
+        categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
+            @Override
+            public void onResponse(Call<List<Categoria>> call, Response<List<Categoria>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    categorias = response.body();
+                    consultasFragment = CategoriaProductosFragment.newInstance(null);
+                    pagerAdapter = new ProductoCategoriasPagerAdapter(ProductosTabsActivity.this, categorias, true);
+                    pagerAdapter.setFragmentTodosPersonalizado(consultasFragment);
+                    binding.viewPager.setAdapter(pagerAdapter);
+                    // Listener para cambiar el filtro activo segun la pestaña
+                    binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                        @Override
+                        public void onPageSelected(int position) {
+                            super.onPageSelected(position);
+                            if (ignorarCambioPestaña) {
+                                ignorarCambioPestaña = false;
+                                return;
+                            }
+                            if (position == 0) {
+                                filtroActivo = "consultas";
+                            } else {
+                                filtroActivo = "por_categoria";
+                                categoriaDesdeIntent = categorias.get(position - 1).getNombre();
+                            }
+                        }
+                    });
+                    // Configura los nombres de las pestañas
+                    new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+                        tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre());
+                    }).attach();
+                    // Si viene desde Reportes aplica el filtro inicial
+                    if (desdeReporte && modo != null) {
+                        aplicarFiltroDesdeReporte(modo, categoriaReporte);
+                        binding.viewPager.setCurrentItem(0);
+                        desdeReporte = false;
+                    }
+                }
             }
+            @Override
+            public void onFailure(Call<List<Categoria>> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    // Aplica el filtro segun el reporte que se selecciono
+    private void aplicarFiltroDesdeReporte(String modo, String categoriaReporte) {
+        filtroActivo = modo;
+        categoriaDesdeIntent = categoriaReporte;
+        Callback<List<Producto>> callback = new Callback<List<Producto>>() {
+            @Override
+            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    binding.viewPager.post(() -> consultasFragment.actualizarProductos(response.body()));
+                }
+            }
+            @Override
+            public void onFailure(Call<List<Producto>> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        };
+        // Ejecuta el llamado segun el tipo de filtro
+        switch (modo) {
+            case "total":
+                productoService.obtenerTodosLosProductos().enqueue(callback);
+                break;
+            case "bajo_stock":
+                productoService.obtenerProductosConMenorStock().enqueue(callback);
+                break;
+            case "por_categoria":
+                if (categoriaReporte != null) {
+                    productoService.buscarPorNombreCategoria(categoriaReporte).enqueue(callback);
+                } else {
+                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
+    // Genera y descarga un PDF segun el filtro activo
+    private void generarPdfSegunFiltro() {
+        switch (filtroActivo) {
+            case "total":
+                descargarPdf(reporteService.descargarReporteTodos());
+                break;
+            case "recientes":
+                descargarPdf(reporteService.descargarReporteProductosRecientes());
+                break;
+            case "bajo_stock":
+                descargarPdf(reporteService.descargarReporteBajoStock());
+                break;
+            case "por_categoria":
+                if (categoriaDesdeIntent != null) {
+                    descargarPdf(reporteService.descargarReportePorCategoria(categoriaDesdeIntent));
+                } else {
+                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                Toast.makeText(this, "Exportar PDF no disponible para este filtro", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+    // Descarga el PDF y lo guarda en almacenamiento local
+    private void descargarPdf(Call<ResponseBody> call) {
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String contentDisposition = response.headers().get("Content-Disposition");
+                        String fileName = "reporte.pdf";
+                        if (contentDisposition != null && contentDisposition.contains("filename=")) {
+                            fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
+                        }
 
+                        InputStream is = response.body().byteStream();
+                        File file = new File(getExternalFilesDir(null), fileName);
+                        FileOutputStream fos = new FileOutputStream(file);
+                        byte[] buffer = new byte[4096];
+                        int len;
+                        while ((len = is.read(buffer)) != -1) {
+                            fos.write(buffer, 0, len);
+                        }
+                        fos.close();
+                        is.close();
+
+                        Toast.makeText(ProductosTabsActivity.this, "PDF descargado como: " + fileName, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Toast.makeText(ProductosTabsActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(ProductosTabsActivity.this, "Error al generar PDF", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Fallo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    // Configura los chips de filtros: Todos, Recientes, Bajo stock, Precio
     private void configurarChips() {
         binding.chipTodos.setOnClickListener(v -> {
-            // Filtro general (opcional)
+            filtroActivo = "total";
+            productoService.obtenerTodosLosProductos().enqueue(new Callback<List<Producto>>() {
+                @Override
+                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        consultasFragment.actualizarProductos(response.body());
+                        binding.viewPager.setCurrentItem(0);
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Producto>> call, Throwable t) {
+                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
-
-        binding.chipRecientes.setOnClickListener(v -> cargarProductosRecientes());
-
-        binding.chipBajoStock.setOnClickListener(v -> cargarProductosBajoStock());
-
+        binding.chipRecientes.setOnClickListener(v -> {
+            filtroActivo = "recientes";
+            productoService.productosRecientes().enqueue(new Callback<List<Producto>>() {
+                @Override
+                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        consultasFragment.actualizarProductos(response.body());
+                        binding.viewPager.setCurrentItem(0);
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Producto>> call, Throwable t) {
+                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+        binding.chipBajoStock.setOnClickListener(v -> {
+            filtroActivo = "bajo_stock";
+            productoService.obtenerProductosConMenorStock().enqueue(new Callback<List<Producto>>() {
+                @Override
+                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        consultasFragment.actualizarProductos(response.body());
+                        binding.viewPager.setCurrentItem(0);
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Producto>> call, Throwable t) {
+                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
         binding.chipPrecio.setOnClickListener(v -> {
             Chip chip = (Chip) v;
             if (chip.getText().toString().contains("↑")) {
                 chip.setText("Precio ↓");
-                ordenarProductosPorPrecioDescendente();
+                consultasFragment.ordenarPorPrecioDescendente();
             } else {
                 chip.setText("Precio ↑");
-                ordenarProductosPorPrecioAscendente();
+                consultasFragment.ordenarPorPrecioAscendente();
             }
         });
     }
-
-    private void cargarCategorias() {
-        showProgress(true);
-        categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
-            @Override
-            public void onResponse(Call<List<Categoria>> call, Response<List<Categoria>> response) {
-                showProgress(false);
-                if (response.isSuccessful() && response.body() != null) {
-                    categorias = response.body();
-                    configurarViewPagerConCategorias();
-                } else {
-                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar categorías", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Categoria>> call, Throwable t) {
-                showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void configurarViewPagerConCategorias() {
-        pagerAdapter = new ProductoCategoriasPagerAdapter(this, categorias, true);
-        binding.viewPager.setAdapter(pagerAdapter);
-
-        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
-            if (position == 0) {
-                tab.setText("Todos");
-            } else {
-                tab.setText(categorias.get(position - 1).getNombre());
-            }
-        }).attach();
-    }
-
+    // Busqueda de productos segun el texto ingresado
     private void buscarProductos() {
         String query = binding.etBuscar.getText().toString().trim();
-
         if (TextUtils.isEmpty(query)) {
             Toast.makeText(this, "Ingrese un término de búsqueda", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        showProgress(true);
+        filtroActivo = "consultas";
         productoService.buscarPorNombre(query).enqueue(new Callback<List<Producto>>() {
             @Override
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                showProgress(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    if (response.body().isEmpty()) {
-                        Toast.makeText(ProductosTabsActivity.this, "No se encontraron productos", Toast.LENGTH_SHORT).show();
-                    } else {
-                        binding.viewPager.setCurrentItem(0);
-                        actualizarFragmentoActual(response.body());
-                    }
-                } else {
-                    Toast.makeText(ProductosTabsActivity.this, "Error en la búsqueda", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Producto>> call, Throwable t) {
-                showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void cargarProductosRecientes() {
-        showProgress(true);
-        productoService.productosRecientes().enqueue(new Callback<List<Producto>>() {
-            @Override
-            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                showProgress(false);
-                if (response.isSuccessful() && response.body() != null) {
+                    consultasFragment.actualizarProductos(response.body());
                     binding.viewPager.setCurrentItem(0);
-                    actualizarFragmentoActual(response.body());
-                    Toast.makeText(ProductosTabsActivity.this, "Mostrando productos recientes", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar productos recientes", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
-                showProgress(false);
                 Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-    private void cargarProductosBajoStock() {
-        showProgress(true);
-        productoService.obtenerProductosConMenorStock().enqueue(new Callback<List<Producto>>() {
-            @Override
-            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                showProgress(false);
-                if (response.isSuccessful() && response.body() != null) {
-                    binding.viewPager.setCurrentItem(0);
-                    actualizarFragmentoActual(response.body());
-                    Toast.makeText(ProductosTabsActivity.this, "Mostrando productos con bajo stock", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ProductosTabsActivity.this, "Error al cargar productos con bajo stock", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Producto>> call, Throwable t) {
-                showProgress(false);
-                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void ordenarProductosPorPrecioAscendente() {
-        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
-                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
-
-        if (fragmentoActual != null) {
-            fragmentoActual.ordenarPorPrecioAscendente();
-            Toast.makeText(this, "Productos ordenados por precio ↑", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void ordenarProductosPorPrecioDescendente() {
-        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
-                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
-
-        if (fragmentoActual != null) {
-            fragmentoActual.ordenarPorPrecioDescendente();
-            Toast.makeText(this, "Productos ordenados por precio ↓", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void actualizarFragmentoActual(List<Producto> productos) {
-        CategoriaProductosFragment fragmentoActual = (CategoriaProductosFragment)
-                getSupportFragmentManager().findFragmentByTag("f" + binding.viewPager.getCurrentItem());
-
-        if (fragmentoActual != null) {
-            fragmentoActual.actualizarProductos(productos);
-        }
-    }
-
-    private void showProgress(boolean show) {
-        binding.progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
+    // Controla la navegacion inferior (BottomNavigation)
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         try {
             int itemId = item.getItemId();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-            // Importante: finalizar la actividad actual antes de iniciar la nueva
             if (itemId == R.id.navigation_inicio) {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
-                finish(); // Añadir esto
+                finish();
                 return true;
             } else if (itemId == R.id.navigation_reportes) {
-                Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("fragment", "reportes");
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
-                finish(); // Añadir esto
+                finish();
                 return true;
-            } else if (itemId == R.id.navigation_usuarios) {
-                if (SessionManager.getInstance().isAdmin()) {
-                    Intent intent = new Intent(this, MainActivity.class);
-                    intent.putExtra("fragment", "usuarios");
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish(); // Añadir esto
-                    return true;
-                }
+            } else if (itemId == R.id.navigation_usuarios && SessionManager.getInstance().isAdmin()) {
+                intent.putExtra("fragment", "usuarios");
+                startActivity(intent);
+                finish();
+                return true;
             }
             return false;
         } catch (Exception e) {
-            // Registrar el error para diagnóstico
             e.printStackTrace();
             Toast.makeText(this, "Error de navegación: " + e.getMessage(), Toast.LENGTH_LONG).show();
             return false;

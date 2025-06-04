@@ -10,9 +10,10 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface CategoriaService {
+    //Endpoint busqueda de todos los catalogos
     @GET("api/categorias/listar")
     Call<List<Categoria>> listarCategorias();
-
+    //Endpoint crea un catalogo nuevo
     @POST("api/categorias/crear")
     Call<Categoria> crearCategoria(@Body Categoria categoria);
 }

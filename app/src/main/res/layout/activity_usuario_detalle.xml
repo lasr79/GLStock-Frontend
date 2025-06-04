@@ -1,151 +1,273 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/background_main"
+tools:context=".ui.admin.UsuarioDetalleActivity">
+
+<!-- HEADER CON GRADIENTE UNIFICADO -->
+<View
+    android:id="@+id/viewTopBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#f5f5f5"
-    tools:context=".ui.admin.UsuarioDetalleActivity">
+    android:layout_height="120dp"
+    android:background="@drawable/header_gradient_background"
+    app:layout_constraintTop_toTopOf="parent" />
 
-    <View
-        android:id="@+id/viewTopBackground"
+<!-- TOOLBAR UNIFICADO -->
+<androidx.appcompat.widget.Toolbar
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@android:color/transparent"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    app:layout_constraintTop_toTopOf="parent"
+    app:title="Detalle de Usuario"
+    app:titleTextColor="@color/text_white"
+    app:navigationIcon="@android:drawable/ic_menu_revert"
+    app:navigationIconTint="@color/text_white" />
+
+<!-- SCROLL VIEW PARA CONTENIDO -->
+<androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:fillViewport="true"
+    app:layout_constraintTop_toBottomOf="@id/viewTopBackground"
+    app:layout_constraintBottom_toTopOf="@id/buttonsContainer">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#3F51B5"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#3F51B5"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:title="Detalle de Usuario" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toTopOf="@id/buttonsContainer">
-
-        <LinearLayout
+        <!-- CARD AVATAR Y INFO BÁSICA -->
+        <androidx.cardview.widget.CardView
+            style="@style/GLStockCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp">
 
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etNombre"
+                <!-- AVATAR CENTRADO -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nombre" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginBottom="20dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_person"
+                        android:background="@drawable/rounded_button_background"
+                        android:backgroundTint="@color/chip_background"
+                        android:padding="16dp"
+                        app:tint="@color/primary_blue" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etApellido"
+                    <TextView
+                        style="@style/GLStockTextSubtitle1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Información del usuario"
+                        android:textStyle="bold"
+                        android:layout_marginTop="12dp" />
+                </LinearLayout>
+
+                <!-- NOMBRE -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/GLStockTextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Apellido" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:hint="Nombre"
+                    app:startIconDrawable="@drawable/ic_person"
+                    app:startIconTint="@color/primary_blue">
 
-            <com.google.android.material.textfield.TextInputLayout
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- APELLIDO -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/GLStockTextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Apellido"
+                    app:startIconDrawable="@drawable/ic_person"
+                    app:startIconTint="@color/primary_blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etApellido"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD INFORMACIÓN DE CUENTA -->
+        <androidx.cardview.widget.CardView
+            style="@style/GLStockCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etCorreo"
+                <TextView
+                    style="@style/GLStockTextHeading3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Información de cuenta"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- EMAIL -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/GLStockTextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Correo electrónico"
-                    android:inputType="textEmailAddress" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    app:startIconDrawable="@android:drawable/ic_dialog_email"
+                    app:startIconTint="@color/primary_blue">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilContrasena"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:endIconMode="password_toggle"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCorreo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etContrasena"
+                <!-- CONTRASEÑA -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilContrasena"
+                    style="@style/GLStockTextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Contraseña"
-                    android:inputType="textPassword" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+                    app:startIconTint="@color/primary_blue"
+                    app:endIconMode="password_toggle">
 
-            <TextView
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etContrasena"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD ROL Y PERMISOS -->
+        <androidx.cardview.widget.CardView
+            style="@style/GLStockCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Rol"
-                android:layout_marginBottom="4dp"/>
+                android:orientation="vertical"
+                android:padding="20dp">
 
-            <Spinner
-                android:id="@+id/spinnerRol"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/spinner_background"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp"/>
-        </LinearLayout>
-    </ScrollView>
+                <TextView
+                    style="@style/GLStockTextHeading3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Rol y permisos"
+                    android:layout_marginBottom="16dp" />
 
-    <LinearLayout
-        android:id="@+id/buttonsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+                <TextView
+                    style="@style/GLStockTextSubtitle2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Seleccionar rol del usuario"
+                    android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGuardar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Guardar"
-            android:layout_marginEnd="8dp"
-            app:cornerRadius="8dp"
-            android:backgroundTint="#4CAF50" />
+                <Spinner
+                    android:id="@+id/spinnerRol"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/spinner_background"
+                    android:padding="12dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEliminar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Eliminar"
-            android:layout_marginStart="8dp"
-            app:cornerRadius="8dp"
-            android:backgroundTint="#F44336" />
+                <!-- INFORMACIÓN DEL ROL -->
+                <TextView
+                    style="@style/GLStockTextCaption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Administrador: Acceso completo al sistema\n• Gestor: Gestión de productos e inventario"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/chip_background"
+                    android:padding="12dp"
+                    android:textColor="@color/chip_text" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ESPACIO PARA SCROLL -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="120dp" />
     </LinearLayout>
+</androidx.core.widget.NestedScrollView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+<!-- BOTONES ACCIÓN -->
+<LinearLayout
+    android:id="@+id/buttonsContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="20dp"
+    app:layout_constraintBottom_toBottomOf="parent">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGuardar"
+        style="@style/GLStockButtonSuccess"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_weight="1"
+        android:text="Guardar"
+        android:layout_marginEnd="8dp"
+        app:icon="@android:drawable/ic_menu_save"
+        app:iconGravity="textStart" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEliminar"
+        style="@style/GLStockButtonError"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_weight="1"
+        android:text="Eliminar"
+        android:layout_marginStart="8dp"
+        app:icon="@android:drawable/ic_menu_delete"
+        app:iconGravity="textStart" />
+</LinearLayout>
+
+<!-- PROGRESS BAR -->
+<ProgressBar
+    android:id="@+id/progressBar"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,84 +21,80 @@ import com.example.glstock.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public abstract class BaseActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
-
+    // ViewBinding para acceder a los elementos del layout base
     protected ActivityBaseBinding binding;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Infla el layout base y lo asigna como contenido de la actividad
         binding = ActivityBaseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Configurar toolbar
+        // Configura el toolbar como ActionBar
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
+        // Agrega boton de retroceso en el ActionBar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Establece el título de la actividad usando un metodo abstracto que cada subclase implementa
         getSupportActionBar().setTitle(getTitleForActivity());
-
-        // Configurar navegación inferior
+        // Configura el listener de la barra de navegacion inferior
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
-
-        // Mostrar u ocultar la sección de usuarios según el rol
+        // Oculta o muestra el ítem de usuarios segun el rol del usuario (solo visible para admin)
         MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
         if (usuariosItem != null) {
             usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
         }
-
-        // Cargar contenido en el contenedor
+        // Infla el contenido especifico de la subclase dentro del contenedor del layout base
         View contentView = getLayoutInflater().inflate(getContentLayoutId(), binding.contentContainer, false);
         binding.contentContainer.addView(contentView);
-
-        // Inicializar vistas
+        // Inicializa las vistas especificas de la subclase
         initViews(contentView);
     }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
+        // Navega a la actividad principal si se selecciona el icono de inicio
         if (itemId == R.id.navigation_inicio) {
             navigateToActivity(MainActivity.class);
             return true;
+            // Carga el fragmento de reportes dentro de la actividad principal
         } else if (itemId == R.id.navigation_reportes) {
-            // Por ahora, vamos a usar MainActivity con el fragmento de reportes
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra("fragment", "reportes");
             startActivity(intent);
             return true;
+            // Carga el fragmento de usuarios solo si el usuario es administrador
         } else if (itemId == R.id.navigation_usuarios) {
             if (SessionManager.getInstance().isAdmin()) {
-                // Por ahora, vamos a usar MainActivity con el fragmento de usuarios
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("fragment", "usuarios");
                 startActivity(intent);
             }
             return true;
         }
-
         return false;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Controla el boton de retroceso en la toolbar
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-    // Método para navegar a otra actividad
+    // Metodo de utilidad para navegar entre actividades, evitando duplicados si ya estamos en la actividad actual
     protected void navigateToActivity(Class<?> activityClass) {
         if (this.getClass().equals(activityClass)) {
-            return; // Ya estamos en esta actividad
+            return; // No hace nada si ya estamos en la actividad
         }
 
         Intent intent = new Intent(this, activityClass);
         startActivity(intent);
     }
-
-    // Métodos abstractos que deben implementar las subclases
+    // Metodo abstracto que debe retornar el layout especifico de la subclase
     protected abstract int getContentLayoutId();
+    // Metodo abstracto para definir el título dinamico de cada subclase
     protected abstract String getTitleForActivity();
+    // Metodo abstracto para inicializar vistas dentro de la subclase
     protected abstract void initViews(View contentView);
 }

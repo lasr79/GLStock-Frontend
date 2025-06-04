@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/iconRecientes"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_menu_recent_history"
+            android:background="@drawable/rounded_button_background"
+            android:backgroundTint="@color/chip_background"
+            android:padding="8dp"
+            app:tint="@color/primary_blue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/btnMovimientosRecientes"
+            style="@style/GLStockTextSubtitle1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Movimientos Recientes"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/iconRecientes"
+            app:layout_constraintTop_toTopOf="@id/iconRecientes"
+            app:layout_constraintEnd_toStartOf="@id/iconArrow"
+            android:layout_marginStart="16dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Movimientos de los últimos días"
+            style="@style/GLStockTextCaption"
+            android:layout_marginTop="2dp"
+            app:layout_constraintTop_toBottomOf="@id/btnMovimientosRecientes"
+            app:layout_constraintStart_toStartOf="@id/btnMovimientosRecientes"
+            app:layout_constraintEnd_toEndOf="@id/btnMovimientosRecientes" />
+
+        <ImageView
+            android:id="@+id/iconArrow"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_more"
+            app:tint="@color/text_tertiary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

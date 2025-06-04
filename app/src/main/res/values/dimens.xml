@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SISTEMA DE ESPACIADO UNIFORME (múltiplos de 4dp) -->
+    <dimen name="space_4">4dp</dimen>
+    <dimen name="space_8">8dp</dimen>
+    <dimen name="space_12">12dp</dimen>
+    <dimen name="space_16">16dp</dimen>
+    <dimen name="space_20">20dp</dimen>
+    <dimen name="space_24">24dp</dimen>
+    <dimen name="space_32">32dp</dimen>
+    <dimen name="space_40">40dp</dimen>
+    <dimen name="space_48">48dp</dimen>
+    <dimen name="space_56">56dp</dimen>
+    <dimen name="space_64">64dp</dimen>
+    <dimen name="space_72">72dp</dimen>
+    <dimen name="space_80">80dp</dimen>
+
+    <!-- MARGENES ESTÁNDAR -->
+    <dimen name="margin_small">@dimen/space_8</dimen>
+    <dimen name="margin_medium">@dimen/space_16</dimen>
+    <dimen name="margin_large">@dimen/space_24</dimen>
+    <dimen name="margin_xl">@dimen/space_32</dimen>
+
+    <!-- PADDING ESTÁNDAR -->
+    <dimen name="padding_small">@dimen/space_12</dimen>
+    <dimen name="padding_medium">@dimen/space_16</dimen>
+    <dimen name="padding_large">@dimen/space_20</dimen>
+    <dimen name="padding_xl">@dimen/space_24</dimen>
+
+    <!-- BORDES REDONDEADOS -->
+    <dimen name="radius_small">8dp</dimen>
+    <dimen name="radius_medium">12dp</dimen>
+    <dimen name="radius_large">16dp</dimen>
+    <dimen name="radius_xl">20dp</dimen>
+    <dimen name="radius_xxl">24dp</dimen>
+
+    <!-- ELEVACIONES -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_small">2dp</dimen>
+    <dimen name="elevation_medium">4dp</dimen>
+    <dimen name="elevation_large">8dp</dimen>
+    <dimen name="elevation_xl">12dp</dimen>
+
+    <!-- ALTURAS DE COMPONENTES -->
+    <dimen name="header_height">120dp</dimen>
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="bottom_nav_height">80dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_height_large">56dp</dimen>
+    <dimen name="input_height">56dp</dimen>
+    <dimen name="card_min_height">72dp</dimen>
+    <dimen name="list_item_height">72dp</dimen>
+
+    <!-- TAMAÑOS DE ICONOS -->
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_large">32dp</dimen>
+    <dimen name="icon_xl">40dp</dimen>
+    <dimen name="icon_avatar">48dp</dimen>
+
+    <!-- ANCHO DE BORDES -->
+    <dimen name="stroke_width">1dp</dimen>
+    <dimen name="stroke_width_thick">2dp</dimen>
+
+    <!-- TAMAÑOS DE TEXTO -->
+    <dimen name="text_size_display">28sp</dimen>
+    <dimen name="text_size_headline">24sp</dimen>
+    <dimen name="text_size_title">20sp</dimen>
+    <dimen name="text_size_label">16sp</dimen>
+    <dimen name="text_size_body">14sp</dimen>
+    <dimen name="text_size_caption">12sp</dimen>
+
+</resources>

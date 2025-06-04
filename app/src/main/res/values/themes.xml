@@ -1,9 +1,54 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Tema principal de GLStock -->
     <style name="Base.Theme.GLStock" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Colores primarios -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryVariant">@color/primary_blue_dark</item>
+        <item name="colorOnPrimary">@color/text_white</item>
+
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/success</item>
+        <item name="colorSecondaryVariant">@color/accent_green</item>
+        <item name="colorOnSecondary">@color/text_white</item>
+
+        <!-- Colores de superficie -->
+        <item name="colorSurface">@color/surface_white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:colorBackground">@color/surface_light</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+
+        <!-- Colores de error -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/text_white</item>
+
+        <!-- Estilos de componentes -->
+        <item name="materialButtonStyle">@style/GLStockButtonPrimary</item>
+        <item name="materialCardViewStyle">@style/GLStockCard</item>
+        <item name="textInputStyle">@style/GLStockTextInputLayout</item>
+
+        <!-- Configuraciones adicionales -->
+        <item name="android:statusBarColor">@color/primary_blue_dark</item>
+        <item name="android:navigationBarColor">@color/surface_white</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Typografía -->
+        <item name="textAppearanceHeadline1">@style/GLStockTextHeading1</item>
+        <item name="textAppearanceHeadline2">@style/GLStockTextHeading2</item>
+        <item name="textAppearanceHeadline3">@style/GLStockTextHeading3</item>
+        <item name="textAppearanceSubtitle1">@style/GLStockTextSubtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/GLStockTextSubtitle2</item>
+        <item name="textAppearanceBody1">@style/GLStockTextBody1</item>
+        <item name="textAppearanceBody2">@style/GLStockTextBody2</item>
+        <item name="textAppearanceCaption">@style/GLStockTextCaption</item>
+        <item name="textAppearanceButton">@style/GLStockTextButton</item>
     </style>
 
     <style name="Theme.GLStock" parent="Base.Theme.GLStock" />
+
+    <!-- Tema para splash screen -->
+    <style name="Theme.GLStock.Splash" parent="Theme.GLStock">
+        <item name="android:windowBackground">@drawable/gradient_primary</item>
+        <item name="android:statusBarColor">@color/primary_blue_dark</item>
+    </style>
+
 </resources>

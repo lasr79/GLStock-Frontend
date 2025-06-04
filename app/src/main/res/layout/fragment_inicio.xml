@@ -5,244 +5,300 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f5f5f5">
+    android:background="@color/background_main"
+    tools:context=".ui.gestor.InicioFragment">
 
+    <!-- HEADER CON GRADIENTE -->
     <View
         android:id="@+id/viewTopBackground"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:background="#3F51B5"
+        android:layout_height="120dp"
+        android:background="@drawable/header_curved_bottom"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvInicioTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Dashboard"
-        android:textSize="24sp"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageButton
-        android:id="@+id/btnLogout"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:background="@drawable/rounded_button_background"
-        android:src="@android:drawable/ic_lock_power_off"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="#FFFFFF" />
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/userInfoCard"
+    <!-- ENCABEZADO CON TÍTULO Y LOGOUT -->
+    <LinearLayout
+        android:id="@+id/headerContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="80dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="20dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:id="@+id/tvInicioTitle"
+            style="@style/GLStockHeaderTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dashboard" />
+
+        <ImageButton
+            android:id="@+id/btnLogout"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/rounded_button_background"
+            android:src="@drawable/ic_logout"
+            android:scaleType="center"
+            android:backgroundTint="@color/surface_white"
+            android:contentDescription="Cerrar sesión"
+            app:tint="@color/error" />
+    </LinearLayout>
+
+    <!-- SCROLL PARA CONTENIDO PRINCIPAL -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/viewTopBackground"
+        app:layout_constraintBottom_toBottomOf="parent">
+
         <LinearLayout
-            android:id="@+id/userInfoContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
-            <TextView
-                android:id="@+id/tvUserGreeting"
-                android:layout_width="wrap_content"
+            <!-- CARD INFORMACIÓN USUARIO -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/userInfoCard"
+                style="@style/GLStockCard"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hola, Usuario"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="-20dp"
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
 
-            <TextView
-                android:id="@+id/tvUserEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="usuario@ejemplo.com"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
 
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvUserGreeting"
+                            style="@style/GLStockTextSubtitle1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hola, Usuario"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvUserEmail"
+                            style="@style/GLStockTextBody2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="usuario@ejemplo.com"
+                            android:layout_marginTop="2dp" />
+
+                        <TextView
+                            android:id="@+id/tvUserRole"
+                            style="@style/GLStockTextCaption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ADMIN"
+                            android:textColor="@color/primary_blue"
+                            android:textStyle="bold"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/card_background"
+                            android:backgroundTint="@color/chip_background"
+                            android:padding="6dp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_person"
+                        android:background="@drawable/rounded_button_background"
+                        android:backgroundTint="@color/chip_background"
+                        android:padding="8dp"
+                        app:tint="@color/primary_blue"
+                        android:layout_marginStart="16dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- TÍTULO RESUMEN -->
             <TextView
-                android:id="@+id/tvUserRole"
-                android:layout_width="wrap_content"
+                style="@style/GLStockTextHeading3"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Administrador"
-                android:textStyle="italic"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp" />
+                android:text="Resumen del inventario"
+                android:layout_marginBottom="16dp" />
+
+            <!-- GRID MÉTRICAS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="2">
+
+                    <!-- TOTAL PRODUCTOS -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardTotalProductos"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tvTotalProductos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#3F51B5"
+                                android:text="125"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Productos totales"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- BAJO STOCK -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardBajoStock"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tvBajoStock"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#F44336"
+                                android:text="0"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Bajo stock"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- MOVIMIENTOS RECIENTES -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardMovimientosRecientes"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tvMovimientosRecientes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFC107"
+                                android:text="1"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Movimientos recientes"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </GridLayout>
+            </LinearLayout>
+
+            <!-- TÍTULO ACCIONES RÁPIDAS -->
+            <TextView
+                style="@style/GLStockTextHeading3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Acciones rápidas"
+                android:layout_marginBottom="16dp" />
+
+            <!-- BOTONES DE ACCIÓN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="20dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConsultarProductos"
+                    style="@style/GLStockButtonCompact"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="Consultar\nProductos"
+                    android:layout_margin="6dp"
+                    app:icon="@android:drawable/ic_menu_search"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRegistrarMovimiento"
+                    style="@style/GLStockButtonCompactSuccess"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="Registrar\nMovimiento"
+                    android:layout_margin="6dp"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp" />
+            </LinearLayout>
+
+            <!-- ESPACIO FINAL -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/userInfoCard"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Resumen del inventario"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:rowCount="2">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardTotalProductos"
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvTotalProductos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="#3F51B5"
-                        android:text="125"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Productos totales"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardBajoStock"
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvBajoStock"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="#F44336"
-                        android:text="5"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bajo stock"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardUltimosMovimientos"
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvUltimosMovimientos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="#4CAF50"
-                        android:text="5"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Movimientos recientes"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </GridLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Acciones rápidas"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnConsultarProductos"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_weight="1"
-                android:text="Consultar\nProductos"
-                android:textAllCaps="false"
-                android:layout_margin="8dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#3F51B5"
-                app:icon="@android:drawable/ic_menu_search"
-                app:iconGravity="top" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRegistrarMovimiento"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_weight="1"
-                android:text="Registrar\nMovimiento"
-                android:textAllCaps="false"
-                android:layout_margin="8dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#4CAF50"
-                app:icon="@android:drawable/ic_menu_edit"
-                app:iconGravity="top" />
-        </LinearLayout>
-    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

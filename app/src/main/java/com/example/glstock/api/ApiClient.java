@@ -20,7 +20,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
     private static final String BASE_URL = "http://34.196.137.96:8080/";
     private static Retrofit retrofit = null;
-
     public static Retrofit getClient() {
         if (retrofit == null) {
             // Interceptor de logs
@@ -30,8 +29,7 @@ public class ApiClient {
             OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
             httpClient.addInterceptor(logging);
             httpClient.addInterceptor(new AuthInterceptor());
-
-            // Configuración de Gson para fechas
+            // Configuracion de Gson para fechas
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>)
                             (json, type, context) -> LocalDate.parse(json.getAsJsonPrimitive().getAsString()))
@@ -57,7 +55,7 @@ public class ApiClient {
                     .create();
 
 
-            // Construir Retrofit
+            // Construye el Retrofit
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(new NullOnEmptyConverterFactory()) // 👈 para evitar errores por cuerpo vacío
@@ -67,8 +65,7 @@ public class ApiClient {
         }
         return retrofit;
     }
-
-    // Clase para manejar respuestas vacías
+    // Clase para manejar respuestas vacias
     public static class NullOnEmptyConverterFactory extends Converter.Factory {
         @Override
         public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
