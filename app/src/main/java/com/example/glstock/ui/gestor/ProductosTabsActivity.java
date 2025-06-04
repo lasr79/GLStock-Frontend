@@ -1,7 +1,11 @@
 package com.example.glstock.ui.gestor;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -11,6 +15,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.glstock.R;
@@ -43,20 +49,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-// Actividad principal que muestra productos
+// Actividad principal que muestra productos con generación de PDF sin solicitar permisos
 public class ProductosTabsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
-    // Enlace al layout mediante ViewBinding
+
     private ActivityProductosTabsBinding binding;
-    // Servicios API para productos, categorias y reportes
     private ProductoService productoService;
     private CategoriaService categoriaService;
     private ReporteService reporteService;
-    // Adaptador para ViewPager y fragmento principal de consultas
     private ProductoCategoriasPagerAdapter pagerAdapter;
     private CategoriaProductosFragment consultasFragment;
-    // Lista de categorias cargadas desde la API
     private List<Categoria> categorias = new ArrayList<>();
-    // Variables de estado
     private String filtroActivo = "consultas";
     private String categoriaDesdeIntent = null;
     private boolean desdeReporte = false;
@@ -67,19 +69,20 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         super.onCreate(savedInstanceState);
         binding = ActivityProductosTabsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Configuraciones iniciales
+
         configurarToolbar();
         inicializarServicios();
         configurarBottomNavigation();
         configurarAcciones();
-        // Revisa si viene desde Reportes y captura datos enviados por Intent
+
         String modo = getIntent().getStringExtra("modo_reporte");
         categoriaDesdeIntent = getIntent().getStringExtra("categoria");
         desdeReporte = modo != null;
         ignorarCambioPestaña = desdeReporte;
+
         cargarCategorias(modo, categoriaDesdeIntent);
     }
-    // Configura el Toolbar con boton de retroceso
+
     private void configurarToolbar() {
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
@@ -87,13 +90,13 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
-    // Inicializa los servicios API
+
     private void inicializarServicios() {
         productoService = ApiClient.getClient().create(ProductoService.class);
         categoriaService = ApiClient.getClient().create(CategoriaService.class);
         reporteService = ApiClient.getClient().create(ReporteService.class);
     }
-    // Configura el BottomNavigation y muestra "Usuarios" solo si es admin
+
     private void configurarBottomNavigation() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
@@ -101,101 +104,22 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
         }
     }
-    // Configura botones y chips
+
     private void configurarAcciones() {
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
-        // Boton de agregar producto (solo admin)
+
         if (SessionManager.getInstance().isAdmin()) {
             binding.fabAddProduct.setVisibility(View.VISIBLE);
             binding.fabAddProduct.setOnClickListener(v -> startActivity(new Intent(this, ProductoDetalleActivity.class)));
         } else {
             binding.fabAddProduct.setVisibility(View.GONE);
         }
-        // Boton de generar PDF
+
         binding.fabGenerarPdf.setOnClickListener(v -> generarPdfSegunFiltro());
-        // Chips para filtros
+
         configurarChips();
     }
-    // Carga las categorias y configura las pestañas
-    private void cargarCategorias(String modo, String categoriaReporte) {
-        categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
-            @Override
-            public void onResponse(Call<List<Categoria>> call, Response<List<Categoria>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    categorias = response.body();
-                    consultasFragment = CategoriaProductosFragment.newInstance(null);
-                    pagerAdapter = new ProductoCategoriasPagerAdapter(ProductosTabsActivity.this, categorias, true);
-                    pagerAdapter.setFragmentTodosPersonalizado(consultasFragment);
-                    binding.viewPager.setAdapter(pagerAdapter);
-                    // Listener para cambiar el filtro activo segun la pestaña
-                    binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                        @Override
-                        public void onPageSelected(int position) {
-                            super.onPageSelected(position);
-                            if (ignorarCambioPestaña) {
-                                ignorarCambioPestaña = false;
-                                return;
-                            }
-                            if (position == 0) {
-                                filtroActivo = "consultas";
-                            } else {
-                                filtroActivo = "por_categoria";
-                                categoriaDesdeIntent = categorias.get(position - 1).getNombre();
-                            }
-                        }
-                    });
-                    // Configura los nombres de las pestañas
-                    new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
-                        tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre());
-                    }).attach();
-                    // Si viene desde Reportes aplica el filtro inicial
-                    if (desdeReporte && modo != null) {
-                        aplicarFiltroDesdeReporte(modo, categoriaReporte);
-                        binding.viewPager.setCurrentItem(0);
-                        desdeReporte = false;
-                    }
-                }
-            }
-            @Override
-            public void onFailure(Call<List<Categoria>> call, Throwable t) {
-                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-    // Aplica el filtro segun el reporte que se selecciono
-    private void aplicarFiltroDesdeReporte(String modo, String categoriaReporte) {
-        filtroActivo = modo;
-        categoriaDesdeIntent = categoriaReporte;
-        Callback<List<Producto>> callback = new Callback<List<Producto>>() {
-            @Override
-            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    binding.viewPager.post(() -> consultasFragment.actualizarProductos(response.body()));
-                }
-            }
-            @Override
-            public void onFailure(Call<List<Producto>> call, Throwable t) {
-                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        };
-        // Ejecuta el llamado segun el tipo de filtro
-        switch (modo) {
-            case "total":
-                productoService.obtenerTodosLosProductos().enqueue(callback);
-                break;
-            case "bajo_stock":
-                productoService.obtenerProductosConMenorStock().enqueue(callback);
-                break;
-            case "por_categoria":
-                if (categoriaReporte != null) {
-                    productoService.buscarPorNombreCategoria(categoriaReporte).enqueue(callback);
-                } else {
-                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
-                }
-                break;
-        }
-    }
-    // Genera y descarga un PDF segun el filtro activo
+
     private void generarPdfSegunFiltro() {
         switch (filtroActivo) {
             case "total":
@@ -219,7 +143,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 break;
         }
     }
-    // Descarga el PDF y lo guarda en almacenamiento local
+
     private void descargarPdf(Call<ResponseBody> call) {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -232,18 +156,24 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                             fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
                         }
 
+                        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        if (!downloadsDir.exists()) downloadsDir.mkdirs();
+
+                        File file = new File(downloadsDir, fileName);
                         InputStream is = response.body().byteStream();
-                        File file = new File(getExternalFilesDir(null), fileName);
                         FileOutputStream fos = new FileOutputStream(file);
+
                         byte[] buffer = new byte[4096];
                         int len;
                         while ((len = is.read(buffer)) != -1) {
                             fos.write(buffer, 0, len);
                         }
+
+                        fos.flush();
                         fos.close();
                         is.close();
 
-                        Toast.makeText(ProductosTabsActivity.this, "PDF descargado como: " + fileName, Toast.LENGTH_LONG).show();
+                        Toast.makeText(ProductosTabsActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
                         Toast.makeText(ProductosTabsActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -258,7 +188,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             }
         });
     }
-    // Configura los chips de filtros: Todos, Recientes, Bajo stock, Precio
+
     private void configurarChips() {
         binding.chipTodos.setOnClickListener(v -> {
             filtroActivo = "total";
@@ -276,6 +206,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 }
             });
         });
+
         binding.chipRecientes.setOnClickListener(v -> {
             filtroActivo = "recientes";
             productoService.productosRecientes().enqueue(new Callback<List<Producto>>() {
@@ -292,6 +223,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 }
             });
         });
+
         binding.chipBajoStock.setOnClickListener(v -> {
             filtroActivo = "bajo_stock";
             productoService.obtenerProductosConMenorStock().enqueue(new Callback<List<Producto>>() {
@@ -308,6 +240,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 }
             });
         });
+
         binding.chipPrecio.setOnClickListener(v -> {
             Chip chip = (Chip) v;
             if (chip.getText().toString().contains("↑")) {
@@ -319,7 +252,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             }
         });
     }
-    // Busqueda de productos segun el texto ingresado
+
     private void buscarProductos() {
         String query = binding.etBuscar.getText().toString().trim();
         if (TextUtils.isEmpty(query)) {
@@ -335,13 +268,95 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     binding.viewPager.setCurrentItem(0);
                 }
             }
+
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
                 Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-    // Controla la navegacion inferior (BottomNavigation)
+
+    private void cargarCategorias(String modo, String categoriaReporte) {
+        categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
+            @Override
+            public void onResponse(Call<List<Categoria>> call, Response<List<Categoria>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    categorias = response.body();
+                    consultasFragment = CategoriaProductosFragment.newInstance(null);
+                    pagerAdapter = new ProductoCategoriasPagerAdapter(ProductosTabsActivity.this, categorias, true);
+                    pagerAdapter.setFragmentTodosPersonalizado(consultasFragment);
+                    binding.viewPager.setAdapter(pagerAdapter);
+
+                    binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                        @Override
+                        public void onPageSelected(int position) {
+                            super.onPageSelected(position);
+                            if (ignorarCambioPestaña) {
+                                ignorarCambioPestaña = false;
+                                return;
+                            }
+                            if (position == 0) {
+                                filtroActivo = "consultas";
+                            } else {
+                                filtroActivo = "por_categoria";
+                                categoriaDesdeIntent = categorias.get(position - 1).getNombre();
+                            }
+                        }
+                    });
+
+                    new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+                        tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre());
+                    }).attach();
+
+                    if (desdeReporte && modo != null) {
+                        aplicarFiltroDesdeReporte(modo, categoriaReporte);
+                        binding.viewPager.setCurrentItem(0);
+                        desdeReporte = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Categoria>> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void aplicarFiltroDesdeReporte(String modo, String categoriaReporte) {
+        filtroActivo = modo;
+        categoriaDesdeIntent = categoriaReporte;
+        Callback<List<Producto>> callback = new Callback<List<Producto>>() {
+            @Override
+            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    binding.viewPager.post(() -> consultasFragment.actualizarProductos(response.body()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Producto>> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        switch (modo) {
+            case "total":
+                productoService.obtenerTodosLosProductos().enqueue(callback);
+                break;
+            case "bajo_stock":
+                productoService.obtenerProductosConMenorStock().enqueue(callback);
+                break;
+            case "por_categoria":
+                if (categoriaReporte != null) {
+                    productoService.buscarPorNombreCategoria(categoriaReporte).enqueue(callback);
+                } else {
+                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         try {

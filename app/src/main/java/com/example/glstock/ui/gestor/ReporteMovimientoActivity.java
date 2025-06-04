@@ -1,13 +1,19 @@
 package com.example.glstock.ui.gestor;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 
@@ -35,7 +41,7 @@ import com.example.glstock.ui.MainActivity;
 import com.example.glstock.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-// Clase que muestra un reporte de movimientos
+// Clase que muestra un reporte de movimientos con descarga directa sin pedir permisos
 public class ReporteMovimientoActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private ActivityReporteMovimientosBinding binding;
     private MovimientoService movimientoService;
@@ -43,26 +49,27 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
     private MovimientoAdapter adapter;
     private String modoActivo = "";
     private String fechaDesde = "", fechaHasta = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityReporteMovimientosBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Configuracion de toolbar
+
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle("Movimientos");
         }
-        // Configuracion del RecyclerView
+
         binding.rvMovimientos.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MovimientoAdapter();
         binding.rvMovimientos.setAdapter(adapter);
-        // Inicializar servicios
+
         movimientoService = ApiClient.getClient().create(MovimientoService.class);
         reporteService = ApiClient.getClient().create(ReporteService.class);
-        // Configuracion de navegacion inferior
+
         if (binding.bottomNavigation != null) {
             binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
             MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
@@ -70,15 +77,14 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                 usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
             }
         }
-        // Boton de generacion de PDF
+
         binding.fabGenerarPdf.setOnClickListener(v -> generarPdf());
-        // Obtener modo de funcionamiento
+
         String modo = getIntent().getStringExtra("modo");
         modoActivo = modo;
         if ("ultimos".equals(modo)) {
             mostrarUltimosMovimientos();
         } else {
-            // Si es por fechas, obtener las fechas y cargar movimientos
             fechaDesde = getIntent().getStringExtra("desde");
             fechaHasta = getIntent().getStringExtra("hasta");
             if (fechaDesde != null && fechaHasta != null) {
@@ -89,7 +95,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         }
     }
-    // Generar PDF dependiendo del modo activo
+
     private void generarPdf() {
         if ("ultimos".equals(modoActivo)) {
             descargarPdf(reporteService.descargarReporteMovimientosRecientes());
@@ -102,26 +108,39 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             Toast.makeText(this, "No se puede generar el PDF", Toast.LENGTH_SHORT).show();
         }
     }
-    // Descargar y guardar el PDF en almacenamiento local
+
     private void descargarPdf(Call<ResponseBody> call) {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     try {
+                        String contentDisposition = response.headers().get("Content-Disposition");
+                        String fileName = "reporte_movimientos.pdf";
+                        if (contentDisposition != null && contentDisposition.contains("filename=")) {
+                            fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
+                        }
+
+                        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        if (!downloadsDir.exists()) downloadsDir.mkdirs();
+
+                        File file = new File(downloadsDir, fileName);
                         InputStream is = response.body().byteStream();
-                        File file = new File(getExternalFilesDir(null), "reporte_movimientos.pdf");
                         FileOutputStream fos = new FileOutputStream(file);
+
                         byte[] buffer = new byte[4096];
                         int len;
                         while ((len = is.read(buffer)) != -1) {
                             fos.write(buffer, 0, len);
                         }
+
+                        fos.flush();
                         fos.close();
                         is.close();
-                        Toast.makeText(ReporteMovimientoActivity.this, "PDF descargado: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+
+                        Toast.makeText(ReporteMovimientoActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
-                        Toast.makeText(ReporteMovimientoActivity.this, "Error al guardar PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ReporteMovimientoActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Toast.makeText(ReporteMovimientoActivity.this, "Error al generar PDF", Toast.LENGTH_SHORT).show();
@@ -134,7 +153,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         });
     }
-    // Cargar movimientos dentro de un rango de fechas
+
     private void cargarMovimientos(String desdeStr, String hastaStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime inicio = LocalDateTime.parse(desdeStr + "T00:00:00", formatter);
@@ -156,7 +175,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         });
     }
-    // Mostrar los ultimos 10 movimientos registrados
+
     private void mostrarUltimosMovimientos() {
         movimientoService.ultimos10Movimientos().enqueue(new Callback<List<Movimiento>>() {
             @Override
@@ -174,13 +193,13 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         });
     }
-    // Volver a la pantalla anterior al hacer back
+
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
-    // Maneja de la navegacion inferior
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -199,4 +218,3 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         return false;
     }
 }
-
