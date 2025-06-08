@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
 import com.example.glstock.R;
@@ -62,6 +63,7 @@ public class ProductoDetalleActivity extends AppCompatActivity {
         inicializarVistas();
         // Configura el toolbar
         setSupportActionBar(toolbar);
+        CardView cardImagen = findViewById(R.id.cardImagenProducto);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Habilita la flecha atrás
         }
@@ -91,6 +93,7 @@ public class ProductoDetalleActivity extends AppCompatActivity {
             productoActual = new Producto();
             productoActual.setFechaIngreso(new java.sql.Date(System.currentTimeMillis()));
             getSupportActionBar().setTitle("Nuevo Producto");
+            cardImagen.setVisibility(View.GONE);
             btnEliminar.setVisibility(View.GONE);
             btnGuardar.setVisibility(View.VISIBLE);
             modoEdicion = false;

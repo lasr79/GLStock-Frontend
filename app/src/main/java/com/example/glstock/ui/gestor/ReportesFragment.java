@@ -47,14 +47,14 @@ public class ReportesFragment extends Fragment {
         TextView btnTotalProductos = binding.cardTotalWrapper.findViewById(R.id.btnTotalProductos);
         TextView btnCategoria = binding.cardCategoriaWrapper.findViewById(R.id.btnCategoria);
         TextView btnBajoStock = binding.cardBajoStockWrapper.findViewById(R.id.btnBajoStock);
-        TextView btnUltimosMovimientos = binding.cardUltimosMovimientosWrapper.findViewById(R.id.btnUltimosMovimientos);
-        TextView btnMovimientosRecientes = binding.cardRecientesWrapper.findViewById(R.id.btnMovimientosRecientes);
+        TextView btnRangoMovimientos = binding.cardRangoMovimientosWrapper.findViewById(R.id.btnUltimosMovimientos);
+        TextView btnUltimosMovimientos = binding.cardUltimosMovimientosWrapper.findViewById(R.id.btnMovimientosRecientes);
         // Asigna acciones a cada boton
         btnTotalProductos.setOnClickListener(v -> manejarReporte("total", null, null, null));
         btnCategoria.setOnClickListener(v -> mostrarSelectorCategoria());
         btnBajoStock.setOnClickListener(v -> manejarReporte("bajo_stock", null, null, null));
-        btnUltimosMovimientos.setOnClickListener(v -> mostrarSelectorFechas());
-        btnMovimientosRecientes.setOnClickListener(v -> mostrarUltimosMovimientos());
+        btnRangoMovimientos.setOnClickListener(v -> mostrarSelectorFechas());
+        btnUltimosMovimientos.setOnClickListener(v -> mostrarUltimosMovimientos());
     }
     // Maneja la navegacion segun el tipo de reporte seleccionado
     private void manejarReporte(String modo, String categoria, String desde, String hasta) {

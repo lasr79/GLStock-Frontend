@@ -90,28 +90,28 @@
                 <include layout="@layout/item_card_bajo_stock"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- WRAPPER: ÚLTIMOS MOVIMIENTOS -->
+            <!-- WRAPPER: Por Rango Movimientos -->
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cardUltimosMovimientosWrapper"
+                android:id="@+id/card_rango_movimientos_wrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:layout_constraintTop_toBottomOf="@id/cardBajoStockWrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_ultimos_movimientos"/>
+                <include layout="@layout/item_card_rango_movimientos"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- WRAPPER: MOVIMIENTOS RECIENTES -->
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cardRecientesWrapper"
+                android:id="@+id/card_ultimos_movimientos_wrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:layout_constraintTop_toBottomOf="@id/cardUltimosMovimientosWrapper"
+                app:layout_constraintTop_toBottomOf="@id/card_rango_movimientos_wrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_movimientos_recientes"/>
+                <include layout="@layout/item_card_ultimos_movimientos"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

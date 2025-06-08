@@ -19,6 +19,7 @@ import com.example.glstock.api.ApiClient;
 import com.example.glstock.api.UsuarioService;
 import com.example.glstock.model.Rol;
 import com.example.glstock.model.Usuario;
+import com.example.glstock.util.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -73,6 +74,11 @@ public class UsuarioDetalleActivity extends AppCompatActivity {
             if (usuarioActual != null) {
                 mostrarDatosUsuario(); // Muestra los datos en pantalla
                 getSupportActionBar().setTitle(soloLectura ? "Detalle de Usuario" : "Editar Usuario");
+                // Desactiva botón de eliminar si es su propio usuario
+                String email = SessionManager.getInstance().getUserEmail();
+                if (usuarioActual.getCorreo().equals(email)) {
+                    btnEliminar.setVisibility(View.GONE);
+                }
             }
         } else {
             // Es un nuevo usuario

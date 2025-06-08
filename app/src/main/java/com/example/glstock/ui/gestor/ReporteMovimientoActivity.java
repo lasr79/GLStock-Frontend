@@ -1,16 +1,22 @@
 package com.example.glstock.ui.gestor;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -28,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -78,7 +85,28 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         }
 
-        binding.fabGenerarPdf.setOnClickListener(v -> generarPdf());
+        binding.fabGenerarPdf.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("¿Estás seguro de que quieres descargar el reporte en PDF?");
+
+            builder.setPositiveButton("Descargar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    generarPdf();
+                }
+            });
+
+            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss(); // solo cierra el diálogo
+                }
+            });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        });
+
 
         String modo = getIntent().getStringExtra("modo");
         modoActivo = modo;
@@ -121,24 +149,33 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                             fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
                         }
 
-                        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                        if (!downloadsDir.exists()) downloadsDir.mkdirs();
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
-                        File file = new File(downloadsDir, fileName);
-                        InputStream is = response.body().byteStream();
-                        FileOutputStream fos = new FileOutputStream(file);
+                        ContentResolver resolver = getContentResolver();
+                        Uri uri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
 
-                        byte[] buffer = new byte[4096];
-                        int len;
-                        while ((len = is.read(buffer)) != -1) {
-                            fos.write(buffer, 0, len);
+                        if (uri != null) {
+                            InputStream is = response.body().byteStream();
+                            OutputStream os = resolver.openOutputStream(uri);
+
+                            byte[] buffer = new byte[4096];
+                            int len;
+                            while ((len = is.read(buffer)) != -1) {
+                                os.write(buffer, 0, len);
+                            }
+
+                            os.flush();
+                            os.close();
+                            is.close();
+
+                            Toast.makeText(ReporteMovimientoActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(ReporteMovimientoActivity.this, "Error accediendo a almacenamiento", Toast.LENGTH_SHORT).show();
                         }
 
-                        fos.flush();
-                        fos.close();
-                        is.close();
-
-                        Toast.makeText(ReporteMovimientoActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
                         Toast.makeText(ReporteMovimientoActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -146,6 +183,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                     Toast.makeText(ReporteMovimientoActivity.this, "Error al generar PDF", Toast.LENGTH_SHORT).show();
                 }
             }
+
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
