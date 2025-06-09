@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_main">
@@ -10,7 +11,7 @@
     <View
         android:id="@+id/viewTopBackground"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="80dp"
         android:background="@drawable/header_curved_bottom"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -32,10 +33,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        android:paddingBottom="32dp"
         app:layout_constraintTop_toBottomOf="@id/viewTopBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:animateLayoutChanges="false">
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -52,18 +53,18 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="20dp" />
 
             <!-- WRAPPER: TOTAL PRODUCTOS -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cardTotalWrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="24dp"
                 app:layout_constraintTop_toBottomOf="@id/tvSeccion"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_total_productos"/>
+                <include layout="@layout/item_card_total_productos" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- WRAPPER: POR CATEGORÍA -->
@@ -71,11 +72,11 @@
                 android:id="@+id/cardCategoriaWrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="12dp"
                 app:layout_constraintTop_toBottomOf="@id/cardTotalWrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_categoria"/>
+                <include layout="@layout/item_card_categoria" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- WRAPPER: BAJO STOCK -->
@@ -83,11 +84,11 @@
                 android:id="@+id/cardBajoStockWrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="12dp"
                 app:layout_constraintTop_toBottomOf="@id/cardCategoriaWrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_bajo_stock"/>
+                <include layout="@layout/item_card_bajo_stock" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- WRAPPER: Por Rango Movimientos -->
@@ -95,11 +96,11 @@
                 android:id="@+id/card_rango_movimientos_wrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="12dp"
                 app:layout_constraintTop_toBottomOf="@id/cardBajoStockWrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_rango_movimientos"/>
+                <include layout="@layout/item_card_rango_movimientos" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- WRAPPER: MOVIMIENTOS RECIENTES -->
@@ -107,11 +108,11 @@
                 android:id="@+id/card_ultimos_movimientos_wrapper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="12dp"
                 app:layout_constraintTop_toBottomOf="@id/card_rango_movimientos_wrapper"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
-                <include layout="@layout/item_card_ultimos_movimientos"/>
+                <include layout="@layout/item_card_ultimos_movimientos" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

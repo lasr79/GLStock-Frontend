@@ -3,11 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    android:layout_marginHorizontal="4dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="16dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -19,11 +23,11 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:src="@drawable/ic_category"
-        android:background="@drawable/background_orange_light"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+            android:background="@drawable/background_orange_light"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <TextView
             android:id="@+id/btnCategoria"
@@ -32,10 +36,10 @@
             android:layout_height="wrap_content"
             android:text="Por Categoría"
             android:textStyle="bold"
+            android:layout_marginStart="16dp"
             app:layout_constraintStart_toEndOf="@id/iconCategoria"
             app:layout_constraintTop_toTopOf="@id/iconCategoria"
-            app:layout_constraintEnd_toStartOf="@id/iconArrow"
-            android:layout_marginStart="16dp" />
+            app:layout_constraintEnd_toStartOf="@id/iconArrow" />
 
         <TextView
             android:layout_width="0dp"
@@ -43,9 +47,11 @@
             android:text="Consulta productos según su categoría"
             style="@style/GLStockTextCaption"
             android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
             app:layout_constraintTop_toBottomOf="@id/btnCategoria"
             app:layout_constraintStart_toStartOf="@id/btnCategoria"
-            app:layout_constraintEnd_toEndOf="@id/btnCategoria" />
+            app:layout_constraintEnd_toEndOf="@id/btnCategoria"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <ImageView
             android:id="@+id/iconArrow"

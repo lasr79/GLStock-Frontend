@@ -107,7 +107,6 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             dialog.show();
         });
 
-
         String modo = getIntent().getStringExtra("modo");
         modoActivo = modo;
         if ("ultimos".equals(modo)) {
@@ -184,7 +183,6 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                 }
             }
 
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(ReporteMovimientoActivity.this, "Fallo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -192,6 +190,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         });
     }
 
+    // MÉTODO CORREGIDO - Agregada validación para resultados vacíos
     private void cargarMovimientos(String desdeStr, String hastaStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime inicio = LocalDateTime.parse(desdeStr + "T00:00:00", formatter);
@@ -201,35 +200,63 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             @Override
             public void onResponse(Call<List<Movimiento>> call, Response<List<Movimiento>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setMovimientos(response.body());
+                    List<Movimiento> movimientos = response.body();
+
+                    // AGREGADO - Validación para resultados vacíos
+                    if (movimientos.isEmpty()) {
+                        mostrarMensajeNoResultados("No se encontraron movimientos en el rango de fechas seleccionado.");
+                    } else {
+                        adapter.setMovimientos(movimientos);
+                    }
                 } else {
-                    Toast.makeText(ReporteMovimientoActivity.this, "Sin resultados", Toast.LENGTH_SHORT).show();
+                    mostrarMensajeNoResultados("Error al obtener los movimientos. Intente nuevamente.");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Movimiento>> call, Throwable t) {
-                Toast.makeText(ReporteMovimientoActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                mostrarMensajeNoResultados("Error de conexión: " + t.getMessage());
             }
         });
     }
 
+    // MÉTODO CORREGIDO - Agregada validación para resultados vacíos
     private void mostrarUltimosMovimientos() {
         movimientoService.ultimos10Movimientos().enqueue(new Callback<List<Movimiento>>() {
             @Override
             public void onResponse(Call<List<Movimiento>> call, Response<List<Movimiento>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setMovimientos(response.body());
+                    List<Movimiento> movimientos = response.body();
+
+                    // AGREGADO - Validación para resultados vacíos
+                    if (movimientos.isEmpty()) {
+                        mostrarMensajeNoResultados("No hay movimientos registrados en el sistema.");
+                    } else {
+                        adapter.setMovimientos(movimientos);
+                    }
                 } else {
-                    Toast.makeText(ReporteMovimientoActivity.this, "Sin resultados", Toast.LENGTH_SHORT).show();
+                    mostrarMensajeNoResultados("Error al obtener los movimientos. Intente nuevamente.");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Movimiento>> call, Throwable t) {
-                Toast.makeText(ReporteMovimientoActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                mostrarMensajeNoResultados("Error de conexión: " + t.getMessage());
             }
         });
+    }
+
+    // MÉTODO AGREGADO - Muestra mensaje cuando no hay resultados
+    private void mostrarMensajeNoResultados(String mensaje) {
+        new AlertDialog.Builder(this)
+                .setTitle("Sin resultados")
+                .setMessage(mensaje)
+                .setPositiveButton("Aceptar", (dialog, which) -> {
+                    dialog.dismiss();
+                    finish(); // Regresa a la pantalla anterior
+                })
+                .setCancelable(false)
+                .show();
     }
 
     @Override

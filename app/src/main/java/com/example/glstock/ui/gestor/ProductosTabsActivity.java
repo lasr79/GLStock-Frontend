@@ -83,11 +83,17 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         configurarAcciones();
 
         String modo = getIntent().getStringExtra("modo_reporte");
+        boolean filtrarInmediatamente = getIntent().getBooleanExtra("filtrar_inmediatamente", false);
         categoriaDesdeIntent = getIntent().getStringExtra("categoria");
-        desdeReporte = modo != null;
+
+        // CORREGIDO - Mejorar la lógica de detección
+        desdeReporte = (modo != null) || filtrarInmediatamente;
         ignorarCambioPestaña = desdeReporte;
 
-        cargarCategorias(modo, categoriaDesdeIntent);
+        // DEBUG - Log para verificar parámetros
+        android.util.Log.d("ProductosTabsActivity", "modo: " + modo + ", filtrarInmediatamente: " + filtrarInmediatamente + ", categoria: " + categoriaDesdeIntent);
+
+        cargarCategorias(modo, categoriaDesdeIntent, filtrarInmediatamente);
     }
 
     private void configurarToolbar() {
@@ -123,154 +129,30 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         }
 
         binding.fabGenerarPdf.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Estás seguro de que quieres descargar el reporte en PDF?");
-            builder.setPositiveButton("Descargar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    generarPdfSegunFiltro();
-                }
-            });
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss(); // simplemente cierra el diálogo
-                }
-            });
-            AlertDialog dialog = builder.create();
-            dialog.show();
+            new AlertDialog.Builder(this)
+                    .setTitle("¿Descargar el reporte en PDF?")
+                    .setPositiveButton("Descargar", (dialog, which) -> generarPdfSegunFiltro())
+                    .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                    .show();
         });
 
         configurarChips();
     }
 
-    private void generarPdfSegunFiltro() {
-        switch (filtroActivo) {
-            case "total":
-                descargarPdf(reporteService.descargarReporteTodos());
-                break;
-            case "recientes":
-                descargarPdf(reporteService.descargarReporteProductosRecientes());
-                break;
-            case "bajo_stock":
-                descargarPdf(reporteService.descargarReporteBajoStock());
-                break;
-            case "por_categoria":
-                if (categoriaDesdeIntent != null) {
-                    descargarPdf(reporteService.descargarReportePorCategoria(categoriaDesdeIntent));
-                } else {
-                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            default:
-                Toast.makeText(this, "Exportar PDF no disponible para este filtro", Toast.LENGTH_SHORT).show();
-                break;
-        }
-    }
-
-    private void descargarPdf(Call<ResponseBody> call) {
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        String contentDisposition = response.headers().get("Content-Disposition");
-                        String fileName = "reporte.pdf";
-                        if (contentDisposition != null && contentDisposition.contains("filename=")) {
-                            fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
-                        }
-
-                        ContentValues values = new ContentValues();
-                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
-                        ContentResolver resolver = getContentResolver();
-                        Uri uri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
-                        if (uri == null) {
-                            Toast.makeText(ProductosTabsActivity.this, "No se pudo guardar el archivo", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        OutputStream outputStream = resolver.openOutputStream(uri);
-                        InputStream inputStream = response.body().byteStream();
-
-                        byte[] buffer = new byte[4096];
-                        int len;
-                        while ((len = inputStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, len);
-                        }
-
-                        outputStream.flush();
-                        outputStream.close();
-                        inputStream.close();
-
-                        Toast.makeText(ProductosTabsActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
-
-                    } catch (IOException e) {
-                        Toast.makeText(ProductosTabsActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(ProductosTabsActivity.this, "Error al generar PDF", Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(ProductosTabsActivity.this, "Fallo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private void configurarChips() {
         binding.chipTodos.setOnClickListener(v -> {
             filtroActivo = "total";
-            productoService.obtenerTodosLosProductos().enqueue(new Callback<List<Producto>>() {
-                @Override
-                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        consultasFragment.actualizarProductos(response.body());
-                        binding.viewPager.setCurrentItem(0);
-                    }
-                }
-                @Override
-                public void onFailure(Call<List<Producto>> call, Throwable t) {
-                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            aplicarFiltro("total", null);
         });
 
         binding.chipRecientes.setOnClickListener(v -> {
             filtroActivo = "recientes";
-            productoService.productosRecientes().enqueue(new Callback<List<Producto>>() {
-                @Override
-                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        consultasFragment.actualizarProductos(response.body());
-                        binding.viewPager.setCurrentItem(0);
-                    }
-                }
-                @Override
-                public void onFailure(Call<List<Producto>> call, Throwable t) {
-                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            aplicarFiltro("recientes", null);
         });
 
         binding.chipBajoStock.setOnClickListener(v -> {
             filtroActivo = "bajo_stock";
-            productoService.obtenerProductosConMenorStock().enqueue(new Callback<List<Producto>>() {
-                @Override
-                public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        consultasFragment.actualizarProductos(response.body());
-                        binding.viewPager.setCurrentItem(0);
-                    }
-                }
-                @Override
-                public void onFailure(Call<List<Producto>> call, Throwable t) {
-                    Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            aplicarFiltro("bajo_stock", null);
         });
 
         binding.chipPrecio.setOnClickListener(v -> {
@@ -283,6 +165,49 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 consultasFragment.ordenarPorPrecioAscendente();
             }
         });
+    }
+
+    private void aplicarFiltro(String modo, String categoria) {
+        // Asegurar que estamos en la pestaña Consultas
+        binding.viewPager.setCurrentItem(0, false);
+
+        Callback<List<Producto>> callback = new Callback<List<Producto>>() {
+            @Override
+            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Producto> productos = response.body();
+                    if (consultasFragment != null && consultasFragment.isAdded() && consultasFragment.getView() != null) {
+                        consultasFragment.actualizarProductos(productos);
+                    } else if (consultasFragment != null) {
+                        consultasFragment.guardarProductosPendientes(productos);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Producto>> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        switch (modo) {
+            case "total":
+                productoService.obtenerTodosLosProductos().enqueue(callback);
+                break;
+            case "bajo_stock":
+                productoService.obtenerProductosConMenorStock().enqueue(callback);
+                break;
+            case "recientes":
+                productoService.productosRecientes().enqueue(callback);
+                break;
+            case "por_categoria":
+                if (categoria != null) {
+                    productoService.buscarPorNombreCategoria(categoria).enqueue(callback);
+                } else {
+                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
     }
 
     private void buscarProductos() {
@@ -308,12 +233,87 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         });
     }
 
-    private void cargarCategorias(String modo, String categoriaReporte) {
+    private void generarPdfSegunFiltro() {
+        switch (filtroActivo) {
+            case "total":
+                descargarPdf(reporteService.descargarReporteTodos());
+                break;
+            case "recientes":
+                descargarPdf(reporteService.descargarReporteProductosRecientes());
+                break;
+            case "bajo_stock":
+                descargarPdf(reporteService.descargarReporteBajoStock());
+                break;
+            case "por_categoria":
+                if (categoriaDesdeIntent != null) {
+                    descargarPdf(reporteService.descargarReportePorCategoria(categoriaDesdeIntent));
+                } else {
+                    Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                Toast.makeText(this, "Exportar PDF no disponible para este filtro", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void descargarPdf(Call<ResponseBody> call) {
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String fileName = "reporte.pdf";
+                        String contentDisposition = response.headers().get("Content-Disposition");
+                        if (contentDisposition != null && contentDisposition.contains("filename=")) {
+                            fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
+                        }
+
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                        Uri uri = getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
+                        if (uri == null) {
+                            Toast.makeText(ProductosTabsActivity.this, "No se pudo guardar el archivo", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        try (OutputStream os = getContentResolver().openOutputStream(uri);
+                             InputStream is = response.body().byteStream()) {
+                            byte[] buffer = new byte[4096];
+                            int len;
+                            while ((len = is.read(buffer)) != -1) {
+                                os.write(buffer, 0, len);
+                            }
+                            os.flush();
+                        }
+
+                        Toast.makeText(ProductosTabsActivity.this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Toast.makeText(ProductosTabsActivity.this, "Error guardando PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(ProductosTabsActivity.this, "Error al generar PDF", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(ProductosTabsActivity.this, "Fallo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // MÉTODO COMPLETAMENTE REESCRITO - Para corregir problemas de timing
+    private void cargarCategorias(String modo, String categoriaReporte, boolean filtrarInmediatamente) {
         categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
             @Override
             public void onResponse(Call<List<Categoria>> call, Response<List<Categoria>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     categorias = response.body();
+
+                    // Crear fragmento de consultas
                     consultasFragment = CategoriaProductosFragment.newInstance(null);
                     pagerAdapter = new ProductoCategoriasPagerAdapter(ProductosTabsActivity.this, categorias, true);
                     pagerAdapter.setFragmentTodosPersonalizado(consultasFragment);
@@ -322,7 +322,6 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                         @Override
                         public void onPageSelected(int position) {
-                            super.onPageSelected(position);
                             if (ignorarCambioPestaña) {
                                 ignorarCambioPestaña = false;
                                 return;
@@ -336,13 +335,31 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                         }
                     });
 
-                    new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
-                        tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre());
-                    }).attach();
+                    new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) ->
+                            tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre())
+                    ).attach();
 
-                    if (desdeReporte && modo != null) {
-                        aplicarFiltroDesdeReporte(modo, categoriaReporte);
-                        binding.viewPager.setCurrentItem(0);
+                    // CORREGIDO - Aplicar filtro con delay para asegurar que el fragmento esté listo
+                    if (desdeReporte || filtrarInmediatamente) {
+                        // Ir siempre a la pestaña Consultas
+                        binding.viewPager.setCurrentItem(0, false);
+
+                        // Configurar filtro
+                        if ("por_categoria".equals(modo)) {
+                            filtroActivo = "por_categoria";
+                            categoriaDesdeIntent = categoriaReporte;
+                        } else {
+                            filtroActivo = modo != null ? modo : "total";
+                        }
+
+                        // Aplicar filtro con un pequeño delay para asegurar que el fragmento esté completamente cargado
+                        binding.viewPager.post(() -> {
+                            // Esperar un momento más para que el fragmento termine de inicializarse
+                            binding.viewPager.postDelayed(() -> {
+                                aplicarFiltroEnConsultas(filtroActivo, categoriaReporte);
+                            }, 300); // 300ms de delay
+                        });
+
                         desdeReporte = false;
                     }
                 }
@@ -355,36 +372,70 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         });
     }
 
-    private void aplicarFiltroDesdeReporte(String modo, String categoriaReporte) {
-        filtroActivo = modo;
-        categoriaDesdeIntent = categoriaReporte;
+    // MÉTODO MEJORADO - Mejor manejo del timing y estados del fragmento
+    private void aplicarFiltroEnConsultas(String modo, String categoria) {
+        android.util.Log.d("ProductosTabsActivity", "Aplicando filtro: " + modo + ", categoria: " + categoria);
+
         Callback<List<Producto>> callback = new Callback<List<Producto>>() {
             @Override
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    binding.viewPager.post(() -> consultasFragment.actualizarProductos(response.body()));
+                    List<Producto> productos = response.body();
+                    android.util.Log.d("ProductosTabsActivity", "Productos obtenidos: " + productos.size());
+
+                    if (consultasFragment != null) {
+                        // Intentar actualizar inmediatamente si el fragmento está listo
+                        if (consultasFragment.isAdded() && consultasFragment.getView() != null) {
+                            consultasFragment.actualizarProductos(productos);
+                            android.util.Log.d("ProductosTabsActivity", "Fragmento actualizado inmediatamente");
+                        } else {
+                            // Si no está listo, guardar para actualizar después
+                            consultasFragment.guardarProductosPendientes(productos);
+                            android.util.Log.d("ProductosTabsActivity", "Productos guardados como pendientes");
+
+                            // Intentar nuevamente después de un momento
+                            binding.viewPager.postDelayed(() -> {
+                                if (consultasFragment.isAdded() && consultasFragment.getView() != null) {
+                                    consultasFragment.actualizarProductos(productos);
+                                    android.util.Log.d("ProductosTabsActivity", "Fragmento actualizado en segundo intento");
+                                }
+                            }, 500);
+                        }
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<List<Producto>> call, Throwable t) {
                 Toast.makeText(ProductosTabsActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                android.util.Log.e("ProductosTabsActivity", "Error al cargar productos: " + t.getMessage());
             }
         };
 
+        // Ejecutar la consulta según el modo
         switch (modo) {
             case "total":
+                android.util.Log.d("ProductosTabsActivity", "Cargando todos los productos");
                 productoService.obtenerTodosLosProductos().enqueue(callback);
                 break;
             case "bajo_stock":
+                android.util.Log.d("ProductosTabsActivity", "Cargando productos con bajo stock");
                 productoService.obtenerProductosConMenorStock().enqueue(callback);
                 break;
+            case "recientes":
+                android.util.Log.d("ProductosTabsActivity", "Cargando productos recientes");
+                productoService.productosRecientes().enqueue(callback);
+                break;
             case "por_categoria":
-                if (categoriaReporte != null) {
-                    productoService.buscarPorNombreCategoria(categoriaReporte).enqueue(callback);
+                if (categoria != null) {
+                    android.util.Log.d("ProductosTabsActivity", "Cargando productos de categoría: " + categoria);
+                    productoService.buscarPorNombreCategoria(categoria).enqueue(callback);
                 } else {
                     Toast.makeText(this, "Categoría no especificada", Toast.LENGTH_SHORT).show();
                 }
+                break;
+            default:
+                android.util.Log.w("ProductosTabsActivity", "Modo no reconocido: " + modo);
                 break;
         }
     }

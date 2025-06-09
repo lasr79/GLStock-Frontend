@@ -12,7 +12,7 @@
     <View
         android:id="@+id/viewTopBackground"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="100dp"
         android:background="@drawable/header_curved_bottom"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -91,7 +91,7 @@
                             style="@style/GLStockTextSubtitle1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Hola, Usuario"
+                            android:text="Hola"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
 
@@ -100,7 +100,7 @@
                             style="@style/GLStockTextBody2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="usuario@ejemplo.com"
+                            android:text=""
                             android:layout_marginTop="2dp" />
 
                         <TextView
@@ -174,7 +174,7 @@
                                 android:textSize="24sp"
                                 android:textStyle="bold"
                                 android:textColor="#3F51B5"
-                                android:text="125"/>
+                                android:text=""/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -208,7 +208,7 @@
                                 android:textSize="24sp"
                                 android:textStyle="bold"
                                 android:textColor="#F44336"
-                                android:text="0"/>
+                                android:text=""/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -218,9 +218,9 @@
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
-                    <!-- MOVIMIENTOS RECIENTES -->
+                    <!--ULTIMOS MOVIMIENTOS  -->
                     <androidx.cardview.widget.CardView
-                        android:id="@+id/cardMovimientosRecientes"
+                        android:id="@+id/cardUltimosMovimientos"
                         android:layout_width="0dp"
                         android:layout_height="120dp"
                         android:layout_columnWeight="1"
@@ -236,18 +236,18 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tvMovimientosRecientes"
+                                android:id="@+id/tvUltimosMovimientos"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFC107"
-                                android:text="1"/>
+                                android:text=""/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Movimientos recientes"
+                                android:text="Últimos Movimientos"
                                 android:textStyle="bold"/>
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -274,25 +274,31 @@
                     android:id="@+id/btnConsultarProductos"
                     style="@style/GLStockButtonCompact"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Consultar\nProductos"
                     android:layout_margin="6dp"
+                    android:textSize="13sp"
+                    android:minHeight="64dp"
                     app:icon="@android:drawable/ic_menu_search"
                     app:iconGravity="textStart"
-                    app:iconSize="20dp" />
+                    app:iconSize="20dp"
+                    app:iconPadding="8dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegistrarMovimiento"
                     style="@style/GLStockButtonCompactSuccess"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Registrar\nMovimiento"
                     android:layout_margin="6dp"
+                    android:textSize="13sp"
+                    android:minHeight="64dp"
                     app:icon="@android:drawable/ic_menu_edit"
                     app:iconGravity="textStart"
-                    app:iconSize="20dp" />
+                    app:iconSize="20dp"
+                    app:iconPadding="8dp" />
             </LinearLayout>
 
             <!-- ESPACIO FINAL -->

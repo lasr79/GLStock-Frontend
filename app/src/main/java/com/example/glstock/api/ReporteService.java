@@ -7,16 +7,16 @@ import retrofit2.http.Query;
 
 public interface ReporteService {
     //Endpoint genera el pdf de todos los productos
-    @GET("api/reportes/procductos/todos")
+    @GET("api/reportes/productos/todos")
     Call<ResponseBody> descargarReporteTodos();
     //Endpoint genera el pdf de los 5 productos con menos cantidad (stock)
-    @GET("api/reportes/procductos/bajo-stock")
+    @GET("api/reportes/productos/bajo-stock")
     Call<ResponseBody> descargarReporteBajoStock();
     //Endpoint genera el pdf de todos los productos por nombre de categoria
-    @GET("api/reportes/procductos/por-categoria")
+    @GET("api/reportes/productos/por-categoria")
     Call<ResponseBody> descargarReportePorCategoria(@Query("categoria") String nombreCategoria);
     //Endpoint genera el pdf de los ultimos 5 productos agregados por fecha ingreso
-    @GET("api/reportes/procductos/recientes")
+    @GET("api/reportes/productos/recientes")
     Call<ResponseBody> descargarReporteProductosRecientes();
     //Endpoint genera el pdf de los ultimos 5 movimientos agregados por fecha ingreso
     @GET("api/reportes/movimientos/recientes")

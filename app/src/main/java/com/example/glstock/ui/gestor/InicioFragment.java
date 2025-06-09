@@ -41,12 +41,14 @@ public class InicioFragment extends Fragment {
     private UsuarioService usuarioService;
     // Usuario que ha iniciado sesion
     private Usuario usuarioActual;
+
     // Infla el layout del fragmento
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentInicioBinding.inflate(inflater, container, false);
         return binding.getRoot(); // Devuelve la vista raíz
     }
+
     // Metodo que se ejecuta cuando la vista esta lista
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -55,13 +57,16 @@ public class InicioFragment extends Fragment {
         productoService = ApiClient.getClient().create(ProductoService.class);
         movimientoService = ApiClient.getClient().create(MovimientoService.class);
         usuarioService = ApiClient.getClient().create(UsuarioService.class);
+
         // Configura los botones para navegar a otras pantallas
         binding.btnConsultarProductos.setOnClickListener(v -> navigateToProductos());
         binding.btnRegistrarMovimiento.setOnClickListener(v -> navigateToMovimientos());
-        // Configura las cards del dashboard para ver reportes
+
+        // Configura las cards del dashboard para ver reportes - CORREGIDO
         binding.cardTotalProductos.setOnClickListener(v -> navegarAReporte("total"));
         binding.cardBajoStock.setOnClickListener(v -> navegarAReporte("bajo_stock"));
-        binding.cardMovimientosRecientes.setOnClickListener(v -> navegarAReporte("movimientos_recientes"));
+        binding.cardUltimosMovimientos.setOnClickListener(v -> navegarAReporte("movimientos_recientes"));
+
         // Boton de cerrar sesion
         binding.btnLogout.setOnClickListener(v -> {
             SessionManager.getInstance().clearAuthData(); // Limpia sesión
@@ -70,10 +75,12 @@ public class InicioFragment extends Fragment {
             startActivity(intent);
             getActivity().finish();
         });
+
         // Carga datos del usuario y datos del dashboard
         cargarInformacionUsuario();
         loadDashboardData();
     }
+
     // Carga los datos del usuario logueado desde la API
     private void cargarInformacionUsuario() {
         String email = SessionManager.getInstance().getUserEmail();
@@ -93,6 +100,7 @@ public class InicioFragment extends Fragment {
             }
         });
     }
+
     // Muestra los datos completos del usuario si se cargaron
     private void configurarInformacionUsuario() {
         if (usuarioActual != null) {
@@ -104,6 +112,7 @@ public class InicioFragment extends Fragment {
             binding.tvUserGreeting.setText("Hola, " + nombreCompleto);
             binding.tvUserEmail.setText(usuarioActual.getCorreo());
             binding.tvUserRole.setText(usuarioActual.getRol().toString());
+
             // Si se toca la tarjeta del usuario, abre la pantalla de detalle
             binding.userInfoCard.setOnClickListener(v -> {
                 Intent intent = new Intent(getActivity(), UsuarioDetalleActivity.class);
@@ -116,6 +125,7 @@ public class InicioFragment extends Fragment {
             });
         }
     }
+
     // Muestra una versión basica de la informacion del usuario usando datos de sesion
     private void configurarInformacionUsuarioBasica() {
         String email = SessionManager.getInstance().getUserEmail();
@@ -130,12 +140,14 @@ public class InicioFragment extends Fragment {
         binding.tvUserGreeting.setText("Hola, " + nombreUsuario);
         binding.tvUserEmail.setText(email);
         binding.tvUserRole.setText(role);
+
         // Mensaje si se intenta acceder al detalle
         binding.userInfoCard.setOnClickListener(v -> {
             Toast.makeText(getContext(), "No se pudo cargar la información completa del usuario", Toast.LENGTH_SHORT).show();
         });
     }
-    // Navega a diferentes pantallas de reportes dependiendo del tipo
+
+    // MÉTODO CORREGIDO - Navega a diferentes pantallas de reportes dependiendo del tipo
     private void navegarAReporte(String tipoReporte) {
         Intent intent;
 
@@ -143,12 +155,14 @@ public class InicioFragment extends Fragment {
             case "total":
                 intent = new Intent(getActivity(), ProductosTabsActivity.class);
                 intent.putExtra("modo_reporte", "total");
+                intent.putExtra("filtrar_inmediatamente", true); // AGREGADO
                 startActivity(intent);
                 break;
 
             case "bajo_stock":
                 intent = new Intent(getActivity(), ProductosTabsActivity.class);
                 intent.putExtra("modo_reporte", "bajo_stock");
+                intent.putExtra("filtrar_inmediatamente", true); // AGREGADO
                 startActivity(intent);
                 break;
 
@@ -159,6 +173,7 @@ public class InicioFragment extends Fragment {
                 break;
         }
     }
+
     // Carga los datos de resumen (total productos, bajo stock y movimientos recientes)
     private void loadDashboardData() {
         // Consulta de productos con bajo stock
@@ -181,7 +196,7 @@ public class InicioFragment extends Fragment {
             @Override
             public void onResponse(Call<List<Movimiento>> call, Response<List<Movimiento>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    binding.tvMovimientosRecientes.setText(String.valueOf(response.body().size()));
+                    binding.tvUltimosMovimientos.setText(String.valueOf(response.body().size()));
                 }
             }
             @Override
@@ -189,6 +204,7 @@ public class InicioFragment extends Fragment {
                 Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
         // Consulta del total de productos
         productoService.obtenerTodosLosProductos().enqueue(new Callback<List<Producto>>() {
             @Override
@@ -213,6 +229,7 @@ public class InicioFragment extends Fragment {
     private void navigateToMovimientos() {
         startActivity(new Intent(getActivity(), MovimientosActivity.class));
     }
+
     // Limpia el binding cuando se destruye la vista del fragmento
     @Override
     public void onDestroyView() {

@@ -29,20 +29,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-// Fragmento que muestra productos asociados a una categoría específica
 public class CategoriaProductosFragment extends Fragment implements ProductoCardAdapter.OnProductoClickListener {
-    // Claves para recibir datos por argumentos
     private static final String ARG_CATEGORIA_ID = "categoria_id";
     private static final String ARG_CATEGORIA_NOMBRE = "categoria_nombre";
-    // ViewBinding para acceder al layout del fragmento
+    private boolean debeActualizarAlCargar = false;
     private FragmentCategoriaProductosBinding binding;
-    // Adaptador del RecyclerView que muestra los productos en tarjetas
     private ProductoCardAdapter adapter;
     private ProductoService productoService;
-    // Categoria actual seleccionada
     private Categoria categoria;
     private List<Producto> productosFiltrados = null;
-    // Metodo estático para crear una nueva instancia del fragmento con categoria
+    private List<Producto> productosPendientes = null;
+
     public static CategoriaProductosFragment newInstance(Categoria categoria) {
         CategoriaProductosFragment fragment = new CategoriaProductosFragment();
         if (categoria != null) {
@@ -53,54 +50,58 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
         }
         return fragment;
     }
-    // Se ejecuta al crearse el fragmento
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Recupera los argumentos pasados (id y nombre de categoria)
+
         if (getArguments() != null && getArguments().containsKey(ARG_CATEGORIA_ID)) {
             long categoriaId = getArguments().getLong(ARG_CATEGORIA_ID);
             String categoriaNombre = getArguments().getString(ARG_CATEGORIA_NOMBRE);
-            // Inicializa el objeto categoria
             categoria = new Categoria();
             categoria.setId(categoriaId);
             categoria.setNombre(categoriaNombre);
         }
-        // Inicializa la api
+
         productoService = ApiClient.getClient().create(ProductoService.class);
     }
-    // Infla el layout del fragmento usando ViewBinding
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentCategoriaProductosBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
-    // Se ejecuta cuando la vista ya esta creada
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Inicializa el adaptador del RecyclerView
-        adapter = new ProductoCardAdapter(this); // Se pasa el listener de clics
-        // Configura un diseño de grilla con 2 columnas
+
+        adapter = new ProductoCardAdapter(this);
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         binding.rvProductosCategoria.setLayoutManager(layoutManager);
         binding.rvProductosCategoria.setAdapter(adapter);
-        // Carga los productos correspondientes a la categoria
-        cargarProductos();
+
+        if (debeActualizarAlCargar && productosPendientes != null) {
+            actualizarProductos(productosPendientes);
+            productosPendientes = null;
+            debeActualizarAlCargar = false;
+        } else {
+            cargarProductos();
+        }
     }
-    // Metodo para cargar productos
+
     public void cargarProductos() {
         if (productosFiltrados != null) {
             adapter.setProductos(productosFiltrados);
             mostrarMensaje(productosFiltrados.isEmpty());
             return;
         }
-        // Si hay categoria seleccionada, busca productos por categoria
+
         if (categoria != null) {
             Map<String, Long> datos = new HashMap<>();
             datos.put("idCategoria", categoria.getId());
-            // Llamada al backend para productos de una categoria espeiífica
+
             productoService.buscarPorCategoria(datos).enqueue(new Callback<List<Producto>>() {
                 @Override
                 public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
@@ -112,6 +113,7 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
                         Toast.makeText(getContext(), "Error al cargar productos", Toast.LENGTH_SHORT).show();
                     }
                 }
+
                 @Override
                 public void onFailure(Call<List<Producto>> call, Throwable t) {
                     Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -119,7 +121,6 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
             });
 
         } else {
-            // Si no hay categoria, obtiene todos los productos
             productoService.obtenerTodosLosProductos().enqueue(new Callback<List<Producto>>() {
                 @Override
                 public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
@@ -140,45 +141,49 @@ public class CategoriaProductosFragment extends Fragment implements ProductoCard
         }
     }
 
-    // Permite actualizar la lista de productos desde fuera
     public void actualizarProductos(List<Producto> productos) {
-        this.productosFiltrados = productos;
-        if (adapter != null) {
+        if (binding == null || adapter == null) {
+            productosPendientes = productos;
+        } else {
+            productosFiltrados = productos;
             adapter.setProductos(productos);
             mostrarMensaje(productos.isEmpty());
         }
     }
-    // Muestra u oculta el mensaje de "no hay productos"
-    private void mostrarMensaje(boolean vacio) {
-        binding.tvNoProducts.setVisibility(vacio ? View.VISIBLE : View.GONE);
-        binding.rvProductosCategoria.setVisibility(vacio ? View.GONE : View.VISIBLE);
+    public void guardarProductosPendientes(List<Producto> productos) {
+        this.productosPendientes = productos;
+
     }
-    // Ordena los productos por precio ascendente
+    private void mostrarMensaje(boolean vacio) {
+        if (binding != null) {
+            binding.tvNoProducts.setVisibility(vacio ? View.VISIBLE : View.GONE);
+            binding.rvProductosCategoria.setVisibility(vacio ? View.GONE : View.VISIBLE);
+        }
+    }
+
     public void ordenarPorPrecioAscendente() {
         if (adapter != null) {
             adapter.ordenarPorPrecioAscendente();
         }
     }
-    // Ordena los productos por precio descendente
+
     public void ordenarPorPrecioDescendente() {
         if (adapter != null) {
             adapter.ordenarPorPrecioDescendente();
         }
     }
-    // Se ejecuta al hacer clic sobre un producto
+
     @Override
     public void onProductoClick(Producto producto) {
         try {
-            // Abre la pantalla de detalle del producto seleccionado
             Intent intent = new Intent(getContext(), ProductoDetalleActivity.class);
             intent.putExtra("producto_objeto", producto);
             startActivity(intent);
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Error al abrir detalle: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Error al abrir detalle: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-    // Libera el binding al destruir la vista
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

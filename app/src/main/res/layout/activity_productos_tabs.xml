@@ -12,7 +12,7 @@
     <View
         android:id="@+id/headerBackground"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="80dp"
         android:background="@drawable/header_curved_bottom"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -32,70 +32,57 @@
     <!-- CARD DE BÚSQUEDA Y FILTROS -->
     <androidx.cardview.widget.CardView
         android:id="@+id/searchCard"
-        style="@style/GLStockCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
+        app:cardElevation="2dp"
+        app:cardCornerRadius="12dp"
         app:layout_constraintTop_toBottomOf="@id/headerBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="8dp">
 
-            <!-- CONTENEDOR DE BÚSQUEDA -->
+            <!-- Búsqueda -->
             <LinearLayout
                 android:id="@+id/searchContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:orientation="horizontal">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/GLStockTextInputLayout"
+                <EditText
+                    android:id="@+id/etBuscar"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:startIconDrawable="@android:drawable/ic_menu_search"
-                    app:startIconTint="@color/primary_blue">
+                    android:hint="Buscar productos..."
+                    android:background="@android:drawable/editbox_background"
+                    android:padding="8dp" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etBuscar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Buscar productos..." />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.button.MaterialButton
+                <ImageButton
                     android:id="@+id/btnBuscar"
-                    style="@style/GLStockButtonPrimary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="56dp"
-                    android:text="Buscar"
-                    android:layout_gravity="bottom" />
+                    android:layout_width="48dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    android:backgroundTint="@color/primary_blue"
+                    android:background="@drawable/rounded_button_background"
+                    android:contentDescription="Buscar" />
             </LinearLayout>
 
-            <!-- FILTROS RÁPIDOS -->
-            <TextView
-                style="@style/GLStockTextCaption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Filtros rápidos:"
-                android:layout_marginBottom="8dp"
-                android:textStyle="bold" />
-
+            <!-- Filtros -->
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:singleSelection="false">
+                android:layout_marginTop="8dp"
+                app:singleSelection="true"
+                app:chipSpacing="4dp">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipTodos"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Todos"
@@ -103,21 +90,18 @@
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipRecientes"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Recientes" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipBajoStock"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Bajo Stock" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPrecio"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Precio ↑" />

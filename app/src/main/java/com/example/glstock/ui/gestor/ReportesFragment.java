@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-
+import androidx.cardview.widget.CardView;
 
 import com.example.glstock.api.ApiClient;
 import com.example.glstock.api.CategoriaService;
@@ -28,34 +28,48 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import com.example.glstock.R;
+
 //Fragment de el modulo de reportes
 public class ReportesFragment extends Fragment {
     private FragmentReportesBinding binding;
     private CategoriaService categoriaService;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Infla el layout del fragment usando ViewBinding
         binding = FragmentReportesBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         // Inicializa el servicio de categorias
         categoriaService = ApiClient.getClient().create(CategoriaService.class);
-        // Obtiene las referencias a los botones dentro de las tarjetas
-        TextView btnTotalProductos = binding.cardTotalWrapper.findViewById(R.id.btnTotalProductos);
-        TextView btnCategoria = binding.cardCategoriaWrapper.findViewById(R.id.btnCategoria);
-        TextView btnBajoStock = binding.cardBajoStockWrapper.findViewById(R.id.btnBajoStock);
-        TextView btnRangoMovimientos = binding.cardRangoMovimientosWrapper.findViewById(R.id.btnUltimosMovimientos);
-        TextView btnUltimosMovimientos = binding.cardUltimosMovimientosWrapper.findViewById(R.id.btnMovimientosRecientes);
-        // Asigna acciones a cada boton
-        btnTotalProductos.setOnClickListener(v -> manejarReporte("total", null, null, null));
-        btnCategoria.setOnClickListener(v -> mostrarSelectorCategoria());
-        btnBajoStock.setOnClickListener(v -> manejarReporte("bajo_stock", null, null, null));
-        btnRangoMovimientos.setOnClickListener(v -> mostrarSelectorFechas());
-        btnUltimosMovimientos.setOnClickListener(v -> mostrarUltimosMovimientos());
+
+        // CORREGIDO - Configura listeners en toda la tarjeta, no solo en los TextViews
+
+        // Total Productos - listener en toda la tarjeta
+        View cardTotalProductos = binding.cardTotalWrapper.getChildAt(0);
+        cardTotalProductos.setOnClickListener(v -> manejarReporte("total", null, null, null));
+
+        // Por Categoría - listener en toda la tarjeta
+        View cardCategoria = binding.cardCategoriaWrapper.getChildAt(0);
+        cardCategoria.setOnClickListener(v -> mostrarSelectorCategoria());
+
+        // Bajo Stock - listener en toda la tarjeta
+        View cardBajoStock = binding.cardBajoStockWrapper.getChildAt(0);
+        cardBajoStock.setOnClickListener(v -> manejarReporte("bajo_stock", null, null, null));
+
+        // Rango de Movimientos - listener en toda la tarjeta
+        View cardRangoMovimientos = binding.cardRangoMovimientosWrapper.getChildAt(0);
+        cardRangoMovimientos.setOnClickListener(v -> mostrarSelectorFechas());
+
+        // Últimos Movimientos - listener en toda la tarjeta
+        View cardUltimosMovimientos = binding.cardUltimosMovimientosWrapper.getChildAt(0);
+        cardUltimosMovimientos.setOnClickListener(v -> mostrarUltimosMovimientos());
     }
+
     // Maneja la navegacion segun el tipo de reporte seleccionado
     private void manejarReporte(String modo, String categoria, String desde, String hasta) {
         switch (modo) {
@@ -68,6 +82,7 @@ public class ReportesFragment extends Fragment {
             default:
                 Intent intent = new Intent(getContext(), ProductosTabsActivity.class);
                 intent.putExtra("modo_reporte", modo);
+                intent.putExtra("filtrar_inmediatamente", true); // AGREGADO - para activar filtro inmediato
                 if ("por_categoria".equals(modo)) {
                     intent.putExtra("categoria", categoria);
                 }
@@ -75,6 +90,7 @@ public class ReportesFragment extends Fragment {
                 break;
         }
     }
+
     // Muestra un dialogo para seleccionar una categoria
     private void mostrarSelectorCategoria() {
         categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
@@ -95,6 +111,7 @@ public class ReportesFragment extends Fragment {
                             .show();
                 }
             }
+
             @Override
             public void onFailure(Call<List<Categoria>> call, Throwable t) {
                 new AlertDialog.Builder(requireContext())
@@ -105,12 +122,14 @@ public class ReportesFragment extends Fragment {
             }
         });
     }
+
     // Inicia la actividad para mostrar los ultimos movimientos
     private void mostrarUltimosMovimientos() {
         Intent intent = new Intent(getContext(), ReporteMovimientoActivity.class);
         intent.putExtra("modo", "ultimos");
         startActivity(intent);
     }
+
     // Muestra un dialogo personalizado para seleccionar rango de fechas
     private void mostrarSelectorFechas() {
         final View dialogView = getLayoutInflater().inflate(R.layout.dialog_seleccionar_fechas, null);
@@ -118,14 +137,17 @@ public class ReportesFragment extends Fragment {
         final TextView tvHasta = dialogView.findViewById(R.id.tvHasta);
         final Button btnConsultar = dialogView.findViewById(R.id.btnConsultar);
         btnConsultar.setEnabled(false);
+
         final AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle("Selecciona el rango de fechas")
                 .setView(dialogView)
                 .setNegativeButton("Cancelar", (dialogInterface, i) -> dialogInterface.dismiss())
                 .create();
+
         // Configura el selector de fechas
         tvDesde.setOnClickListener(v -> mostrarDatePicker(tvDesde, dialog, tvHasta, btnConsultar));
         tvHasta.setOnClickListener(v -> mostrarDatePicker(tvHasta, dialog, tvDesde, btnConsultar));
+
         // Acción al pulsar consultar
         btnConsultar.setOnClickListener(v -> {
             String desde = tvDesde.getText().toString();
@@ -133,8 +155,10 @@ public class ReportesFragment extends Fragment {
             dialog.dismiss();
             manejarReporte("movimientos", null, desde, hasta);
         });
+
         dialog.show();
     }
+
     // Muestra el DatePicker y actualiza el campo de texto
     private void mostrarDatePicker(TextView target, AlertDialog dialog, TextView other, Button btnConsultar) {
         Calendar calendar = Calendar.getInstance();
@@ -156,5 +180,3 @@ public class ReportesFragment extends Fragment {
         binding = null; // Libera el binding para evitar memory leaks
     }
 }
-
-
