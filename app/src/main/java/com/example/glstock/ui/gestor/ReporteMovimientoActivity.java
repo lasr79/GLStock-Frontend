@@ -62,21 +62,21 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         super.onCreate(savedInstanceState);
         binding = ActivityReporteMovimientosBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+         // Configura la toolbar
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle("Movimientos");
         }
-
+        // Configura RecyclerView
         binding.rvMovimientos.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MovimientoAdapter();
         binding.rvMovimientos.setAdapter(adapter);
-
+        // Inicializar servicios
         movimientoService = ApiClient.getClient().create(MovimientoService.class);
         reporteService = ApiClient.getClient().create(ReporteService.class);
-
+        // Configura navegacion inferior y visibilidad segun el rol
         if (binding.bottomNavigation != null) {
             binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
             MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
@@ -84,10 +84,10 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                 usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
             }
         }
-
+        // Accion del boton flotante para generar PDF
         binding.fabGenerarPdf.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("¿Estás seguro de que quieres descargar el reporte en PDF?");
+            builder.setTitle("Estás seguro de que quieres descargar el reporte en PDF?");
 
             builder.setPositiveButton("Descargar", new DialogInterface.OnClickListener() {
                 @Override
@@ -106,7 +106,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             AlertDialog dialog = builder.create();
             dialog.show();
         });
-
+        // Procesar parametros del Intent para decidir que reporte mostrar
         String modo = getIntent().getStringExtra("modo");
         modoActivo = modo;
         if ("ultimos".equals(modo)) {
@@ -122,7 +122,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             }
         }
     }
-
+    // Logica para generar PDF dependiendo del modo activo
     private void generarPdf() {
         if ("ultimos".equals(modoActivo)) {
             descargarPdf(reporteService.descargarReporteMovimientosRecientes());
@@ -135,7 +135,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
             Toast.makeText(this, "No se puede generar el PDF", Toast.LENGTH_SHORT).show();
         }
     }
-
+    // Descarga y guarda el archivo PDF generado por el backend
     private void descargarPdf(Call<ResponseBody> call) {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -190,7 +190,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         });
     }
 
-    // MÉTODO CORREGIDO - Agregada validación para resultados vacíos
+    // Carga movimientos entre dos fechas y los muestra en el RecyclerView
     private void cargarMovimientos(String desdeStr, String hastaStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime inicio = LocalDateTime.parse(desdeStr + "T00:00:00", formatter);
@@ -202,7 +202,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                 if (response.isSuccessful() && response.body() != null) {
                     List<Movimiento> movimientos = response.body();
 
-                    // AGREGADO - Validación para resultados vacíos
+                    //Validacion para resultados vacios
                     if (movimientos.isEmpty()) {
                         mostrarMensajeNoResultados("No se encontraron movimientos en el rango de fechas seleccionado.");
                     } else {
@@ -220,7 +220,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         });
     }
 
-    // MÉTODO CORREGIDO - Agregada validación para resultados vacíos
+    // Muestra los ultimos 10 movimientos registrados
     private void mostrarUltimosMovimientos() {
         movimientoService.ultimos10Movimientos().enqueue(new Callback<List<Movimiento>>() {
             @Override
@@ -228,7 +228,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
                 if (response.isSuccessful() && response.body() != null) {
                     List<Movimiento> movimientos = response.body();
 
-                    // AGREGADO - Validación para resultados vacíos
+                    // Validacion para resultados vacios
                     if (movimientos.isEmpty()) {
                         mostrarMensajeNoResultados("No hay movimientos registrados en el sistema.");
                     } else {
@@ -246,7 +246,7 @@ public class ReporteMovimientoActivity extends AppCompatActivity implements Bott
         });
     }
 
-    // MÉTODO AGREGADO - Muestra mensaje cuando no hay resultados
+    //Muestra mensaje cuando no hay resultados
     private void mostrarMensajeNoResultados(String mensaje) {
         new AlertDialog.Builder(this)
                 .setTitle("Sin resultados")

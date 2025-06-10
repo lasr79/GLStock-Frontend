@@ -105,7 +105,7 @@
                         android:layout_marginBottom="16dp"
                         android:text="Información básica" />
 
-                    <!-- NOMBRE -->
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/GLStockTextInputLayout"
                         android:layout_width="match_parent"
@@ -120,7 +120,7 @@
                             android:layout_height="wrap_content" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Descripcion -->
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/GLStockTextInputLayout"
                         android:layout_width="match_parent"
@@ -137,7 +137,7 @@
                             android:minLines="3" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Categoria -->
+
                     <TextView
                         style="@style/GLStockTextSubtitle2"
                         android:layout_width="match_parent"
@@ -195,7 +195,7 @@
                         android:text="Información comercial"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- Precio -->
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/GLStockTextInputLayout"
                         android:layout_width="match_parent"
@@ -212,7 +212,7 @@
                             android:inputType="numberDecimal" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Cantidad (Stock) -->
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/GLStockTextInputLayout"
                         android:layout_width="match_parent"
@@ -228,7 +228,7 @@
                             android:inputType="number" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- URL IMAGEN -->
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/GLStockTextInputLayout"
                         android:layout_width="match_parent"
@@ -246,14 +246,13 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- ESPACIO PARA SCROLL -->
+            <!-- Espacio para scroll -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="120dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BOTONES ACCIÓN -->
     <LinearLayout
         android:id="@+id/buttonsContainer"
         android:layout_width="match_parent"

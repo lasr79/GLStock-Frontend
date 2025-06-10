@@ -74,28 +74,22 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Inflar el layout y establecer el contenido de la actividad
         binding = ActivityProductosTabsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Configuraciones iniciales
         configurarToolbar();
         inicializarServicios();
         configurarBottomNavigation();
         configurarAcciones();
-
         String modo = getIntent().getStringExtra("modo_reporte");
         boolean filtrarInmediatamente = getIntent().getBooleanExtra("filtrar_inmediatamente", false);
         categoriaDesdeIntent = getIntent().getStringExtra("categoria");
-
-        // CORREGIDO - Mejorar la lógica de detección
         desdeReporte = (modo != null) || filtrarInmediatamente;
         ignorarCambioPestaña = desdeReporte;
-
-        // DEBUG - Log para verificar parámetros
-        android.util.Log.d("ProductosTabsActivity", "modo: " + modo + ", filtrarInmediatamente: " + filtrarInmediatamente + ", categoria: " + categoriaDesdeIntent);
-
         cargarCategorias(modo, categoriaDesdeIntent, filtrarInmediatamente);
     }
-
+    // Configura la barra superior de la actividad
     private void configurarToolbar() {
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
@@ -103,13 +97,13 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
-
+    // Inicializa los servicios REST
     private void inicializarServicios() {
         productoService = ApiClient.getClient().create(ProductoService.class);
         categoriaService = ApiClient.getClient().create(CategoriaService.class);
         reporteService = ApiClient.getClient().create(ReporteService.class);
     }
-
+    // Configura la barra de navegación inferior
     private void configurarBottomNavigation() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         MenuItem usuariosItem = binding.bottomNavigation.getMenu().findItem(R.id.navigation_usuarios);
@@ -117,7 +111,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             usuariosItem.setVisible(SessionManager.getInstance().isAdmin());
         }
     }
-
+    // Configura acciones y listeners de los botones flotantes y chips
     private void configurarAcciones() {
         binding.btnBuscar.setOnClickListener(v -> buscarProductos());
 
@@ -130,7 +124,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         binding.fabGenerarPdf.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
-                    .setTitle("¿Descargar el reporte en PDF?")
+                    .setTitle("Estás seguro de que quieres descargar el reporte en PDF?")
                     .setPositiveButton("Descargar", (dialog, which) -> generarPdfSegunFiltro())
                     .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
                     .show();
@@ -138,7 +132,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
 
         configurarChips();
     }
-
+    // Configura los chips de filtrado
     private void configurarChips() {
         binding.chipTodos.setOnClickListener(v -> {
             filtroActivo = "total";
@@ -166,7 +160,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             }
         });
     }
-
+    // Aplica el filtro de productos segun el modo seleccionado
     private void aplicarFiltro(String modo, String categoria) {
         // Asegurar que estamos en la pestaña Consultas
         binding.viewPager.setCurrentItem(0, false);
@@ -209,7 +203,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 break;
         }
     }
-
+    //busqueda por nombre de producto
     private void buscarProductos() {
         String query = binding.etBuscar.getText().toString().trim();
         if (TextUtils.isEmpty(query)) {
@@ -232,7 +226,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             }
         });
     }
-
+    // Genera el PDF segun el filtro activo
     private void generarPdfSegunFiltro() {
         switch (filtroActivo) {
             case "total":
@@ -255,7 +249,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 Toast.makeText(this, "Exportar PDF no disponible para este filtro", Toast.LENGTH_SHORT).show();
         }
     }
-
+    // Descarga el PDF desde la API y lo guarda en el almacenamiento del dispositivo
     private void descargarPdf(Call<ResponseBody> call) {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -263,22 +257,23 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 if (response.isSuccessful() && response.body() != null) {
                     try {
                         String fileName = "reporte.pdf";
+                        // Intentar obtener el nombre real del encabezado HTTP
                         String contentDisposition = response.headers().get("Content-Disposition");
                         if (contentDisposition != null && contentDisposition.contains("filename=")) {
                             fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
                         }
-
+                        // Crear¡ metadata para almacenar el archivo en la carpeta Descargas
                         ContentValues values = new ContentValues();
                         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                         values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
                         values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
+                        // Obtiene el URI donde se guardara el archivo
                         Uri uri = getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
                         if (uri == null) {
                             Toast.makeText(ProductosTabsActivity.this, "No se pudo guardar el archivo", Toast.LENGTH_SHORT).show();
                             return;
                         }
-
+                        // Escribe el contenido del PDF en el archivo
                         try (OutputStream os = getContentResolver().openOutputStream(uri);
                              InputStream is = response.body().byteStream()) {
                             byte[] buffer = new byte[4096];
@@ -303,9 +298,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                 Toast.makeText(ProductosTabsActivity.this, "Fallo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    // MÉTODO COMPLETAMENTE REESCRITO - Para corregir problemas de timing
+    } // Carga las categorias desde la API y configura los tabs
     private void cargarCategorias(String modo, String categoriaReporte, boolean filtrarInmediatamente) {
         categoriaService.listarCategorias().enqueue(new Callback<List<Categoria>>() {
             @Override
@@ -318,7 +311,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                     pagerAdapter = new ProductoCategoriasPagerAdapter(ProductosTabsActivity.this, categorias, true);
                     pagerAdapter.setFragmentTodosPersonalizado(consultasFragment);
                     binding.viewPager.setAdapter(pagerAdapter);
-
+                    // Escuchar cambio de pestaña
                     binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                         @Override
                         public void onPageSelected(int position) {
@@ -334,12 +327,12 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                             }
                         }
                     });
-
+                    // Configura nombres de pestañas dinamicamente
                     new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) ->
                             tab.setText(position == 0 ? "Consultas" : categorias.get(position - 1).getNombre())
                     ).attach();
 
-                    // CORREGIDO - Aplicar filtro con delay para asegurar que el fragmento esté listo
+                    // Aplicar filtro con delay para asegurar que el fragmento este listo
                     if (desdeReporte || filtrarInmediatamente) {
                         // Ir siempre a la pestaña Consultas
                         binding.viewPager.setCurrentItem(0, false);
@@ -352,7 +345,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
                             filtroActivo = modo != null ? modo : "total";
                         }
 
-                        // Aplicar filtro con un pequeño delay para asegurar que el fragmento esté completamente cargado
+                        // Aplica filtro con un pequeño delay para asegurar que el fragmento este completamente cargado
                         binding.viewPager.post(() -> {
                             // Esperar un momento más para que el fragmento termine de inicializarse
                             binding.viewPager.postDelayed(() -> {
@@ -372,28 +365,20 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
         });
     }
 
-    // MÉTODO MEJORADO - Mejor manejo del timing y estados del fragmento
     private void aplicarFiltroEnConsultas(String modo, String categoria) {
-        android.util.Log.d("ProductosTabsActivity", "Aplicando filtro: " + modo + ", categoria: " + categoria);
-
         Callback<List<Producto>> callback = new Callback<List<Producto>>() {
             @Override
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Producto> productos = response.body();
-                    android.util.Log.d("ProductosTabsActivity", "Productos obtenidos: " + productos.size());
-
                     if (consultasFragment != null) {
                         // Intentar actualizar inmediatamente si el fragmento está listo
                         if (consultasFragment.isAdded() && consultasFragment.getView() != null) {
                             consultasFragment.actualizarProductos(productos);
-                            android.util.Log.d("ProductosTabsActivity", "Fragmento actualizado inmediatamente");
                         } else {
-                            // Si no está listo, guardar para actualizar después
+                            // Si no esta listo, guardar para actualizar despues
                             consultasFragment.guardarProductosPendientes(productos);
-                            android.util.Log.d("ProductosTabsActivity", "Productos guardados como pendientes");
-
-                            // Intentar nuevamente después de un momento
+                            // Intenta nuevamente despues de un momento
                             binding.viewPager.postDelayed(() -> {
                                 if (consultasFragment.isAdded() && consultasFragment.getView() != null) {
                                     consultasFragment.actualizarProductos(productos);
@@ -412,7 +397,7 @@ public class ProductosTabsActivity extends AppCompatActivity implements BottomNa
             }
         };
 
-        // Ejecutar la consulta según el modo
+        // Ejecuta la consulta segun el modo
         switch (modo) {
             case "total":
                 android.util.Log.d("ProductosTabsActivity", "Cargando todos los productos");
