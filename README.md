@@ -37,15 +37,15 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 ## 📸 Capturas de pantalla
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/82dcdea8-2260-40ad-b670-6fd6713ca459" alt="Login" width="150"/>
-  <img src="https://github.com/user-attachments/assets/741b42e0-5fc7-4d59-a031-4d6a130f7930" alt="Dashboard Admin" width="150"/>
-  <img src="https://github.com/user-attachments/assets/b431889d-d308-406c-8ce1-630202395507" alt="Dashboard Gestor" width="150"/>
+  <img src="https://github.com/user-attachments/assets/82dcdea8-2260-40ad-b670-6fd6713ca459" alt="Login" width="200"/>
+  <img src="https://github.com/user-attachments/assets/741b42e0-5fc7-4d59-a031-4d6a130f7930" alt="Dashboard Admin" width="200"/>
+  <img src="https://github.com/user-attachments/assets/b431889d-d308-406c-8ce1-630202395507" alt="Dashboard Gestor" width="200"/>
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e2494718-0024-40c7-9e1c-0660a8382f19" alt="Productos" width="150"/>
-  <img src="https://github.com/user-attachments/assets/e001817c-a94c-4532-9e04-0e2fb988370d" alt="Reportes" width="150"/>
-  <img src="https://github.com/user-attachments/assets/1a645a79-2071-4958-b79e-c5a75afa97d2" alt="Usuario" width="150"/>
+  <img src="https://github.com/user-attachments/assets/e2494718-0024-40c7-9e1c-0660a8382f19" alt="Productos" width="200"/>
+  <img src="https://github.com/user-attachments/assets/e001817c-a94c-4532-9e04-0e2fb988370d" alt="Reportes" width="200"/>
+  <img src="https://github.com/user-attachments/assets/1a645a79-2071-4958-b79e-c5a75afa97d2" alt="Usuario" width="200"/>
 </p>
 --- 
 ## 🎥 Demo
