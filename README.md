@@ -1,6 +1,6 @@
 # 📱 GLStock – Frontend (Android)
 
-Aplicación Android (Java) que consume la API REST del backend **GLStock**.  
+Aplicación Android (Java) que consume la API REST del backend **GLStock-Backend**.  
 Permite login con **JWT**, gestión de inventario, usuarios, movimientos y reportes.
 --- 
 ## 🏗️ Arquitectura del proyecto 
@@ -17,7 +17,7 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 - Adapter (RecyclerViewAdapters) → Conecta la UI con los datos, mostrando listas de productos, usuarios o movimientos.
 - API (Retrofit + Interceptor) → Se encarga de la comunicación con el backend (Spring Boot), incluyendo el envío del token JWT en cada petición.
 - Model (Clases de datos) → Representa las entidades de negocio (Producto, Usuario, Movimiento, etc.) que viajan entre frontend y backend.
- -Util (Helpers y SessionManager) → Proporciona utilidades compartidas, como la gestión segura de la sesión, almacenamiento del token y helpers de autenticación.
+- Util (Helpers y SessionManager) → Proporciona utilidades compartidas, como la gestión segura de la sesión, almacenamiento del token y helpers de autenticación.
 
 --- 
 ## ✨ Funcionalidades
@@ -54,4 +54,5 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 
 ## 👤 Autor
-**Luigi Alessandro Squillaro** – [GitHub](https://github.com/lasr79) ·
+
+Desarrollado por **[Luigi Alessandro Squillaro](https://github.com/lasr79)** 
