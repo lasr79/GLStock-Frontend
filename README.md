@@ -47,7 +47,7 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 </p>
 
 
-<img width="502" height="887" alt="LoginTrabajador" src="https://github.com/user-attachments/assets/bdc00eff-e97a-459b-acaa-8408107f6a8c" />
+
 
 
 --- 
