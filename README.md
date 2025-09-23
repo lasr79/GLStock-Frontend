@@ -33,8 +33,6 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 - **Dispositivo físico en LAN** → `http://192.168.x.x:8080/`
 - **Producción (AWS)** → `https://api.tudominio.com/`
 
-> ⚠️ En release, desactivar logs y usar solo HTTPS.
-
 --- 
 ## 📸 Capturas de pantalla
 
