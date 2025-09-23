@@ -36,10 +36,11 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 ## 📸 Capturas de pantalla
 
+
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/82dcdea8-2260-40ad-b670-6fd6713ca459" alt="Login" width="200"/>
-  <img src="https://github.com/user-attachments/assets/741b42e0-5fc7-4d59-a031-4d6a130f7930" alt="Dashboard Admin" width="200"/>
-  <img src="https://github.com/user-attachments/assets/b431889d-d308-406c-8ce1-630202395507" alt="Dashboard Gestor" width="200"/>
+  <img src="https://github.com/user-attachments/assets/b7a83334-e744-47ee-8c9f-275ae46e9891" alt="Login" width="200"/>
+  <img src="https://github.com/user-attachments/assets/3db7476f-c71b-4ca6-aea6-03d7a57eaddb" alt="Dashboard Admin" width="200"/>
+  <img src="https://github.com/user-attachments/assets/501a838c-ae51-43fc-8c9c-84461363dff8" alt="Dashboard Gestor" width="200"/>
 </p>
 
 <p align="center">
