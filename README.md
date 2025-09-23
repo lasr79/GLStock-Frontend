@@ -38,10 +38,17 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 ## 📸 Capturas de pantalla
 <p align="center">
-  <img src="docs/screen-login.png" alt="Login" width="260"/>
-  <img src="docs/screen-productos.png" alt="Productos" width="260"/>
-  <img src="docs/screen-reportes.png" alt="Reportes" width="260"/>
+  <img src="https://github.com/user-attachments/assets/82dcdea8-2260-40ad-b670-6fd6713ca459" alt="Login" width="150"/>
+  <img src="https://github.com/user-attachments/assets/741b42e0-5fc7-4d59-a031-4d6a130f7930)" alt="Dashboard Admin" width="150"/>
+  <img src="https://github.com/user-attachments/assets/xxxxx3" alt="Reportes" width="150"/>
+  <img src="https://github.com/user-attachments/assets/xxxxx4" alt="Usuarios" width="150"/>
+  <img src="https://github.com/user-attachments/assets/xxxxx5" alt="Movimientos" width="150"/>
+  <img src="https://github.com/user-attachments/assets/xxxxx6" alt="Detalle" width="150"/>
 </p>
+
+
+<img width="502" height="887" alt="LoginTrabajador" src="https://github.com/user-attachments/assets/bdc00eff-e97a-459b-acaa-8408107f6a8c" />
+
 
 --- 
 ## 🎥 Demo
