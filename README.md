@@ -1,6 +1,6 @@
 # 📱 GLStock – Frontend (Android)
 
-Aplicación Android (Java) que consume la API REST del backend **GLStock-Backend**.  
+Aplicación Android (Java) que consume la API REST del **GLStock-Backend**.  
 Permite login con **JWT**, gestión de inventario, usuarios, movimientos y reportes.
 --- 
 ## 🏗️ Arquitectura del proyecto 
