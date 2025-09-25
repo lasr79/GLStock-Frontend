@@ -51,9 +51,7 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 ## 🎥 Demo
 
-<p align="center">
-  <a href="assets/demo.mp4?raw=1">▶️ Ver / descargar la demo (MP4)</a>
-</p>
+[Ver / descargar la demo (MP4)](assets/demo.mp4?raw=1)
 --- 
 
 ## 👤 Autor
