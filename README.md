@@ -51,12 +51,9 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 ## 🎥 Demo
 
-
-### Opción A: GIF en el repo
 <p align="center">
-  <img src="docs/demo.gif" alt="Demo GLStock - Android" width="720"/>
+  <a href="assets/demo.mp4">▶️ Ver / descargar la demo (MP4)</a>
 </p>
-
 --- 
 
 ## 👤 Autor
