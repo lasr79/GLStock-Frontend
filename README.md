@@ -49,9 +49,11 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
   <img src="https://github.com/user-attachments/assets/d8f723c7-a93b-44bb-8905-585f6fd5a1c0" alt="Usuario" width="300"/>
 </p>
 --- 
+
 ## 🎥 Demo
 
-[Ver / descargar la demo (MP4)](assets/demo.mp4?raw=1)
+            [Ver / descargar la demo (MP4)](assets/demo.mp4?raw=1)
+
 --- 
 
 ## 👤 Autor
