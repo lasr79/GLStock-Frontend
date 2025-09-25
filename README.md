@@ -51,9 +51,9 @@ Permite login con **JWT**, gestión de inventario, usuarios, movimientos y repor
 --- 
 
 ## 🎥 Demo
-[▶️ Ver / descargar la demo (MP4)](https://raw.githubusercontent.com/lasr79/GLStock-Frontend/main/assets/demo.mp4)
+[▶️ Ver / descargar la demo (MP4)](https://raw.githubusercontent.com/luigisquillaro/GLStock-Frontend/main/assets/demo.mp4)
 --- 
 
 ## 👤 Autor
 
-Desarrollado por **[Luigi Alessandro Squillaro](https://github.com/lasr79)** 
+Desarrollado por **[Luigi Alessandro Squillaro](https://github.com/luigisquillaro)** 
